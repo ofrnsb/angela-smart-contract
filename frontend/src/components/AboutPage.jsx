@@ -7,7 +7,7 @@ const translations = {
     title:
       'Penjelasan Lengkap Smart Contract untuk Sistem Perbankan Konvensional Indonesia',
     subtitle:
-      '(Versi teori komprehensif — menyatukan seluruh penjelasan sebelumnya + arsitektur node antar bank)',
+      '(Versi teori komprehensif - menyatukan seluruh penjelasan sebelumnya + arsitektur node antar bank)',
 
     // 1. Pendahuluan
     intro:
@@ -31,7 +31,7 @@ const translations = {
       'biaya operasional yang tinggi.',
     ],
     introSolution:
-      'Smart contract menawarkan model alternatif: **aturan transaksi yang otomatis, konsisten, dan diverifikasi bersama oleh semua pihak yang berkepentingan**—bukan oleh satu server pusat.',
+      'Smart contract menawarkan model alternatif: **aturan transaksi yang otomatis, konsisten, dan diverifikasi bersama oleh semua pihak yang berkepentingan** - bukan oleh satu server pusat.',
     introNote:
       'Konsep ini tidak menggantikan peran bank atau regulasi, tetapi **meningkatkan efisiensi dan transparansi tanpa mengubah mata uang (IDR tetap IDR)**.',
 
@@ -82,7 +82,7 @@ const translations = {
       'Berikut cara kerja yang terstruktur dan menyerupai operasi nyata bank.',
     trigger: 'A. Pemicu Transaksi (Trigger)',
     triggerDesc:
-      'Setiap transaksi — transfer, pembayaran, pembelian produk — dimulai dari permintaan nasabah.',
+      'Setiap transaksi - transfer, pembayaran, pembelian produk - dimulai dari permintaan nasabah.',
     triggerInfo: 'Ini memberi smart contract informasi dasar:',
     triggerInfoList: [
       'rekening pengirim,',
@@ -137,7 +137,7 @@ const translations = {
       'tidak bisa dihapus atau dimodifikasi secara sepihak.',
     ],
     recordingResult:
-      'Dengan demikian, laporan BI, audit internal bank, dan data transaksi nasabah — semuanya konsisten.',
+      'Dengan demikian, laporan BI, audit internal bank, dan data transaksi nasabah - semuanya konsisten.',
 
     // 5. Contoh Penerapan
     examples: '5. Contoh Penerapan Nyata pada Sistem Perbankan Indonesia',
@@ -244,7 +244,7 @@ const translations = {
     title:
       'Comprehensive Explanation of Smart Contracts for Conventional Indonesian Banking System',
     subtitle:
-      '(Comprehensive theory version — unifying all previous explanations + interbank node architecture)',
+      '(Comprehensive theory version - unifying all previous explanations + interbank node architecture)',
 
     // 1. Introduction
     intro:
@@ -268,7 +268,7 @@ const translations = {
       'high operational costs.',
     ],
     introSolution:
-      'Smart contracts offer an alternative model: **automatic, consistent transaction rules verified together by all relevant parties**—not by a single central server.',
+      'Smart contracts offer an alternative model: **automatic, consistent transaction rules verified together by all relevant parties** - not by a single central server.',
     introNote:
       'This concept does not replace the role of banks or regulations, but **improves efficiency and transparency without changing the currency (IDR remains IDR)**.',
 
@@ -318,7 +318,7 @@ const translations = {
       'The following is a structured workflow that resembles actual bank operations.',
     trigger: 'A. Transaction Trigger',
     triggerDesc:
-      'Every transaction — transfer, payment, product purchase — starts from a customer request.',
+      'Every transaction - transfer, payment, product purchase - starts from a customer request.',
     triggerInfo: 'This provides the smart contract with basic information:',
     triggerInfoList: [
       'sender account,',
@@ -373,7 +373,7 @@ const translations = {
       'cannot be deleted or modified unilaterally.',
     ],
     recordingResult:
-      'Thus, BI reports, internal bank audits, and customer transaction data — all are consistent.',
+      'Thus, BI reports, internal bank audits, and customer transaction data - all are consistent.',
 
     // 5. Examples
     examples: '5. Real Application Examples in Indonesian Banking System',
@@ -569,18 +569,28 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
                 </li>
               ))}
             </ul>
-            <p style={{ marginTop: '20px', fontWeight: '600' }}>
-              {t.introSolution}
-            </p>
+            <p
+              style={{ marginTop: '20px', fontWeight: '600' }}
+              dangerouslySetInnerHTML={{
+                __html: t.introSolution.replace(
+                  /\*\*(.*?)\*\*/g,
+                  '<strong>$1</strong>'
+                ),
+              }}
+            />
             <p
               style={{
                 marginTop: '15px',
                 fontStyle: 'italic',
                 color: '#667eea',
               }}
-            >
-              {t.introNote}
-            </p>
+              dangerouslySetInnerHTML={{
+                __html: t.introNote.replace(
+                  /\*\*(.*?)\*\*/g,
+                  '<strong>$1</strong>'
+                ),
+              }}
+            />
           </div>
         </section>
 
@@ -588,7 +598,15 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
         <section className='about-section'>
           <h2>{t.whatIs}</h2>
           <div className='explanation-box'>
-            <p style={{ fontWeight: '600' }}>{t.whatIsDesc}</p>
+            <p
+              style={{ fontWeight: '600' }}
+              dangerouslySetInnerHTML={{
+                __html: t.whatIsDesc.replace(
+                  /\*\*(.*?)\*\*/g,
+                  '<strong>$1</strong>'
+                ),
+              }}
+            />
             <ul style={{ marginTop: '15px', paddingLeft: '25px' }}>
               {t.whatIsList.map((item, idx) => (
                 <li
@@ -683,9 +701,13 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
                 fontSize: '16px',
                 color: '#667eea',
               }}
-            >
-              {t.whatIsSimple}
-            </p>
+              dangerouslySetInnerHTML={{
+                __html: t.whatIsSimple.replace(
+                  /\*\*(.*?)\*\*/g,
+                  '<strong>$1</strong>'
+                ),
+              }}
+            />
           </div>
         </section>
 
@@ -699,7 +721,15 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
               {t.nodeConceptDesc}
             </p>
             <h3 style={{ marginTop: '25px' }}>{t.nodeWhatIs}</h3>
-            <p style={{ fontWeight: '600' }}>{t.nodeWhatIsDesc}</p>
+            <p
+              style={{ fontWeight: '600' }}
+              dangerouslySetInnerHTML={{
+                __html: t.nodeWhatIsDesc.replace(
+                  /\*\*(.*?)\*\*/g,
+                  '<strong>$1</strong>'
+                ),
+              }}
+            />
             <ul style={{ marginTop: '15px', paddingLeft: '25px' }}>
               {t.nodeWhatIsList.map((item, idx) => (
                 <li
@@ -1073,9 +1103,13 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
                 fontWeight: '500',
                 marginBottom: '20px',
               }}
-            >
-              {t.conclusionDesc}
-            </p>
+              dangerouslySetInnerHTML={{
+                __html: t.conclusionDesc.replace(
+                  /\*\*(.*?)\*\*/g,
+                  '<strong>$1</strong>'
+                ),
+              }}
+            />
             <p style={{ fontWeight: '600', marginTop: '20px' }}>
               {t.conclusionResult}
             </p>

@@ -35,7 +35,7 @@ const translations = {
       'Konsep ini tidak menggantikan peran bank atau regulasi, tetapi **meningkatkan efisiensi dan transparansi tanpa mengubah mata uang (IDR tetap IDR)**.',
 
     // 2. Apa itu Smart Contract
-    whatIs: '2. Apa Itu Smart Contract? (Versi Teori untuk Non-Teknis)',
+    whatIs: '2. Apa Itu Smart Contract? ',
     whatIsDesc: 'Smart contract adalah **kontrak digital otomatis** yang:',
     whatIsList: [
       'berisi aturan dan ketentuan yang telah disepakati,',
@@ -271,7 +271,7 @@ const translations = {
       'This concept does not replace the role of banks or regulations, but **improves efficiency and transparency without changing the currency (IDR remains IDR)**.',
 
     // 2. What is Smart Contract
-    whatIs: '2. What is a Smart Contract? (Theory Version for Non-Technical)',
+    whatIs: '2. What is a Smart Contract?',
     whatIsDesc: 'A smart contract is an **automatic digital contract** that:',
     whatIsList: [
       'contains agreed-upon rules and terms,',
@@ -744,7 +744,12 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
                 <li
                   key={idx}
                   style={{ marginBottom: '8px', lineHeight: '1.6' }}
-                  dangerouslySetInnerHTML={{ __html: item }}
+                  dangerouslySetInnerHTML={{
+                    __html: item.replace(
+                      /\*\*(.*?)\*\*/g,
+                      '<strong>$1</strong>'
+                    ),
+                  }}
                 />
               ))}
             </ul>
@@ -878,7 +883,12 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
             </ul>
             <p
               style={{ marginTop: '15px', fontWeight: '600', color: '#667eea' }}
-              dangerouslySetInnerHTML={{ __html: t.executionNote }}
+              dangerouslySetInnerHTML={{
+                __html: t.executionNote.replace(
+                  /\*\*(.*?)\*\*/g,
+                  '<strong>$1</strong>'
+                ),
+              }}
             />
 
             <h3 style={{ marginTop: '30px', color: '#667eea' }}>
@@ -1070,7 +1080,12 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
                 <li
                   key={idx}
                   style={{ marginBottom: '8px', lineHeight: '1.6' }}
-                  dangerouslySetInnerHTML={{ __html: item }}
+                  dangerouslySetInnerHTML={{
+                    __html: item.replace(
+                      /\*\*(.*?)\*\*/g,
+                      '<strong>$1</strong>'
+                    ),
+                  }}
                 />
               ))}
             </ul>

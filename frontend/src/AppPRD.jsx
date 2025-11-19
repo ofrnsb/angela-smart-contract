@@ -260,7 +260,7 @@ function AppPRD() {
         title: 'Validasi Rekening',
         description: 'Memverifikasi rekening asal dan tujuan',
         status: 'processing',
-        node: 'Node Bank Asal',
+        node: `Node ${fromAcc.bank}`,
       });
       await delay(800);
       setFlowSteps([...steps]);
@@ -271,7 +271,7 @@ function AppPRD() {
         title: 'Cek Saldo',
         description: `Memverifikasi saldo rekening ${fromAcc.accountNumber}`,
         status: 'processing',
-        node: 'Node Bank Asal',
+        node: `Node ${fromAcc.bank}`,
       });
       await delay(600);
       setFlowSteps([...steps]);
@@ -290,10 +290,10 @@ function AppPRD() {
       steps[2].status = 'completed';
       steps.push({
         step: 4,
-        title: 'Validasi Bank Asal',
-        description: 'Node Bank Asal memverifikasi transaksi',
+        title: `Validasi ${fromAcc.bank}`,
+        description: `Node ${fromAcc.bank} memverifikasi transaksi`,
         status: 'processing',
-        node: 'Node Bank Asal',
+        node: `Node ${fromAcc.bank}`,
       });
       await delay(1200);
       setFlowSteps([...steps]);
@@ -301,10 +301,10 @@ function AppPRD() {
       steps[3].status = 'completed';
       steps.push({
         step: 5,
-        title: 'Validasi Bank Tujuan',
-        description: 'Node Bank Tujuan memverifikasi transaksi',
+        title: `Validasi ${toAcc.bank}`,
+        description: `Node ${toAcc.bank} memverifikasi transaksi`,
         status: 'processing',
-        node: 'Node Bank Tujuan',
+        node: `Node ${toAcc.bank}`,
       });
       await delay(1200);
       setFlowSteps([...steps]);
@@ -344,7 +344,11 @@ function AppPRD() {
           toAccount: toAcc.accountNumber,
           amount: `Rp ${parseFloat(amount).toLocaleString('id-ID')}`,
           proposerBank: fromAcc.bank,
-          validators: ['Node Bank Asal', 'Node Bank Tujuan', 'Node Regulator'],
+          validators: [
+            `Node ${fromAcc.bank}`,
+            `Node ${toAcc.bank}`,
+            'Node Regulator',
+          ],
           approvalThreshold: '2 dari 2',
           timestamp: new Date().toISOString(),
         },
@@ -362,7 +366,7 @@ function AppPRD() {
         title: 'Validasi Rekening',
         description: 'Memverifikasi rekening asal dan tujuan',
         status: 'processing',
-        node: 'Node Bank',
+        node: `Node ${fromAcc.bank}`,
       });
       await delay(600);
       setFlowSteps([...steps]);
@@ -373,7 +377,7 @@ function AppPRD() {
         title: 'Cek Saldo',
         description: `Memverifikasi saldo rekening ${fromAcc.accountNumber}`,
         status: 'processing',
-        node: 'Node Bank',
+        node: `Node ${fromAcc.bank}`,
       });
       await delay(500);
       setFlowSteps([...steps]);
@@ -384,7 +388,7 @@ function AppPRD() {
         title: 'Eksekusi Transfer',
         description: 'Memproses transfer antar rekening',
         status: 'processing',
-        node: 'Node Bank',
+        node: `Node ${fromAcc.bank}`,
       });
       await delay(800);
       setFlowSteps([...steps]);
@@ -395,7 +399,7 @@ function AppPRD() {
         title: 'Update Saldo',
         description: 'Memperbarui saldo rekening asal dan tujuan',
         status: 'processing',
-        node: 'Node Bank',
+        node: `Node ${fromAcc.bank}`,
       });
       await delay(600);
       setFlowSteps([...steps]);
@@ -460,7 +464,7 @@ function AppPRD() {
       title: 'Validasi Rekening',
       description: `Memverifikasi rekening ${buyerAcc.accountNumber}`,
       status: 'processing',
-      node: 'Bank Node',
+      node: `Node ${buyerAcc.bank}`,
     });
     await delay(600);
     setFlowSteps([...steps]);
@@ -471,7 +475,7 @@ function AppPRD() {
       title: 'Cek Saldo',
       description: `Memverifikasi saldo untuk pembayaran`,
       status: 'processing',
-      node: 'Bank Node',
+      node: `Node ${buyerAcc.bank}`,
     });
     await delay(500);
     setFlowSteps([...steps]);

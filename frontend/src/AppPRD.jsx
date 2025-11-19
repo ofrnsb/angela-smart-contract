@@ -755,9 +755,7 @@ function AppPRD() {
             fontSize: '14px',
             lineHeight: '1.6',
           }}
-        >
-          <strong style={{ fontWeight: '600' }}>Demo Mode:</strong> {t.demoNote}
-        </p>
+        ></p>
       </div>
 
       {/* Transfer Panel */}

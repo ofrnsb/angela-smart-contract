@@ -159,7 +159,8 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
             fontSize: '12px',
             fontWeight: '500',
             transition: 'all 0.2s',
-            minWidth: '40px'
+            width: 'auto',
+            marginLeft: 'auto'
           }}
           onMouseOver={(e) => {
             e.target.style.background = '#e0e0e0';

@@ -1025,19 +1025,16 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
           <h2>{t.benefits}</h2>
           <div className='benefits-grid'>
             <div className='benefit-card'>
-              <div className='benefit-icon'>🔄</div>
               <h3>{t.benefit1}</h3>
               <p>{t.benefit1Desc}</p>
             </div>
 
             <div className='benefit-card'>
-              <div className='benefit-icon'>⚡</div>
               <h3>{t.benefit2}</h3>
               <p>{t.benefit2Desc}</p>
             </div>
 
             <div className='benefit-card'>
-              <div className='benefit-icon'>💰</div>
               <h3>{t.benefit3}</h3>
               <p>{t.benefit3Desc}</p>
               <ul
@@ -1057,13 +1054,11 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
             </div>
 
             <div className='benefit-card'>
-              <div className='benefit-icon'>🔒</div>
               <h3>{t.benefit4}</h3>
               <p>{t.benefit4Desc}</p>
             </div>
 
             <div className='benefit-card'>
-              <div className='benefit-icon'>✅</div>
               <h3>{t.benefit5}</h3>
               <p>{t.benefit5Desc}</p>
             </div>

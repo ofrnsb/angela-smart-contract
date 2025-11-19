@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  node-bni:
+    build: ./node
+    container_name: node-bni
+    environment:
+      - NODE_ID=node-bni
+      - NODE_TYPE=bank
+      - BANK_ID=BNI
+      - PORT=3001
+      - PEERS=node-bca,node-merchant
+    ports:
+      - "3001:3001"
+    networks:
+      - banking-network
+
+  node-bca:
+    build: ./node
+    container_name: node-bca
+    environment:
+      - NODE_ID=node-bca
+      - NODE_TYPE=bank
+      - BANK_ID=BCA
+      - PORT=3002
+      - PEERS=node-bni,node-merchant
+    ports:
+      - "3002:3002"
+    networks:
+      - banking-network
+
+  node-merchant:
+    build: ./node
+    container_name: node-merchant
+    environment:
+      - NODE_ID=node-merchant
+      - NODE_TYPE=merchant
+      - BANK_ID=MERCHANT
+      - PORT=3003
+      - PEERS=node-bni,node-bca
+    ports:
+      - "3003:3003"
+    networks:
+      - banking-network
+
+networks:
+  banking-network:
+    driver: bridge
+

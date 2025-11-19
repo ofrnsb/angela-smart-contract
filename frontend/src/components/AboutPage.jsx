@@ -138,14 +138,34 @@ const translations = {
   }
 };
 
-function AboutPage({ onBack, language = 'id' }) {
+function AboutPage({ onBack, language = 'id', onLanguageChange }) {
   const t = translations[language];
   
   return (
     <div className='about-container'>
-      <button className='back-button' onClick={onBack}>
-        {t.back}
-      </button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <button className='back-button' onClick={onBack}>
+          {t.back}
+        </button>
+        <button
+          onClick={() => onLanguageChange && onLanguageChange(language === 'id' ? 'en' : 'id')}
+          style={{ 
+            background: '#667eea', 
+            color: 'white', 
+            border: 'none', 
+            padding: '10px 20px', 
+            borderRadius: '8px', 
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '600',
+            transition: 'all 0.2s'
+          }}
+          onMouseOver={(e) => e.target.style.background = '#5568d3'}
+          onMouseOut={(e) => e.target.style.background = '#667eea'}
+        >
+          {language === 'id' ? 'EN' : 'ID'}
+        </button>
+      </div>
 
       <div className='about-content'>
         <h1>{t.title}</h1>

@@ -36,7 +36,9 @@ const translations = {
     invalidAmount: 'Jumlah transfer tidak valid',
     insufficientBalance: 'Saldo tidak mencukupi',
     sameAccount: 'Rekening asal dan tujuan tidak boleh sama',
-    selectProductError: 'Mohon pilih rekening dan produk'
+    selectProductError: 'Mohon pilih rekening dan produk',
+    transferSuccess: 'Transfer berhasil!',
+    purchaseSuccess: 'Pembelian berhasil!'
   },
   en: {
     title: 'Banking System with Smart Contract',
@@ -69,7 +71,9 @@ const translations = {
     invalidAmount: 'Invalid transfer amount',
     insufficientBalance: 'Insufficient balance',
     sameAccount: 'From and to accounts cannot be the same',
-    selectProductError: 'Please select account and product'
+    selectProductError: 'Please select account and product',
+    transferSuccess: 'Transfer successful!',
+    purchaseSuccess: 'Purchase successful!'
   }
 };
 
@@ -390,7 +394,7 @@ function AppPRD() {
     
     setTransactionResult({
       success: true,
-      message: `Transfer berhasil! Rp ${parseFloat(amount).toLocaleString('id-ID')} dari ${fromAcc.accountNumber} ke ${toAcc.accountNumber}`,
+      message: `${t.transferSuccess} Rp ${parseFloat(amount).toLocaleString('id-ID')} ${language === 'id' ? 'dari' : 'from'} ${fromAcc.accountNumber} ${language === 'id' ? 'ke' : 'to'} ${toAcc.accountNumber}`,
       fromBalance: updatedAccounts[fromAcc.accountNumber].balance,
       toBalance: updatedAccounts[toAcc.accountNumber].balance
     });
@@ -515,7 +519,7 @@ function AppPRD() {
     
     setTransactionResult({
       success: true,
-      message: `Pembelian berhasil! ${product.name} untuk rekening ${buyerAcc.accountNumber}`,
+      message: `${t.purchaseSuccess} ${product.name} ${language === 'id' ? 'untuk rekening' : 'for account'} ${buyerAcc.accountNumber}`,
       remainingBalance: updatedAccounts[buyerAcc.accountNumber].balance
     });
     
@@ -599,27 +603,46 @@ function AppPRD() {
   };
 
   if (showAboutPage) {
-    return <AboutPage onBack={() => setShowAboutPage(false)} language={language} />;
+    return <AboutPage onBack={() => setShowAboutPage(false)} language={language} onLanguageChange={setLanguage} />;
   }
 
   const accountList = Object.values(accounts);
 
   return (
     <div className="container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ margin: 0 }}>Sistem Perbankan dengan Smart Contract</h1>
-        <button 
-          onClick={() => setShowAboutPage(true)}
-          style={{ background: '#28a745', width: 'auto', padding: '10px 20px' }}
-        >
-          Penjelasan Smart Contract
-        </button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+        <h1 style={{ margin: 0 }}>{t.title}</h1>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button
+            onClick={() => setLanguage(language === 'id' ? 'en' : 'id')}
+            style={{ 
+              background: '#667eea', 
+              color: 'white', 
+              border: 'none', 
+              padding: '10px 20px', 
+              borderRadius: '8px', 
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.background = '#5568d3'}
+            onMouseOut={(e) => e.target.style.background = '#667eea'}
+          >
+            {language === 'id' ? 'EN' : 'ID'}
+          </button>
+          <button 
+            onClick={() => setShowAboutPage(true)}
+            style={{ background: '#28a745', width: 'auto', padding: '10px 20px', border: 'none', borderRadius: '8px', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+          >
+            {t.aboutButton}
+          </button>
+        </div>
       </div>
 
       <div className="card" style={{ background: '#e7f3ff', border: '2px solid #2196F3', marginBottom: '20px' }}>
         <p style={{ margin: 0, color: '#1565C0' }}>
-          <strong>Demo Mode:</strong> Sistem ini menggunakan smart contract untuk memproses semua transaksi. 
-          Setiap transaksi divalidasi oleh multiple nodes untuk keamanan dan transparansi.
+          <strong>Demo Mode:</strong> {t.demoNote}
         </p>
       </div>
 
@@ -825,7 +848,7 @@ function AppPRD() {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ margin: 0, color: '#667eea' }}>Memproses Transaksi...</h2>
+              <h2 style={{ margin: 0, color: '#667eea' }}>{t.processingTransaction}</h2>
             </div>
             <div style={{ marginTop: '20px' }}>
               {flowSteps.map((step, idx) => (

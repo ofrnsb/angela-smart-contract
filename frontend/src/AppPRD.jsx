@@ -35,6 +35,8 @@ const translations = {
     contractInfo:
       'Informasi: Setiap transaksi menggunakan smart contract yang terenkripsi dan tersimpan permanen di blockchain. Alamat dan ID transaksi di atas dapat digunakan untuk memverifikasi transaksi Anda.',
     close: 'Tutup',
+    viewProcess: 'Lihat Proses',
+    viewResult: 'Lihat Hasil',
     selectAccount: 'Mohon lengkapi semua field',
     invalidAmount: 'Jumlah transfer tidak valid',
     insufficientBalance: 'Saldo tidak mencukupi',
@@ -73,6 +75,8 @@ const translations = {
     contractInfo:
       'Information: Every transaction uses an encrypted smart contract that is permanently stored on the blockchain. The address and transaction ID above can be used to verify your transaction.',
     close: 'Close',
+    viewProcess: 'View Process',
+    viewResult: 'View Result',
     selectAccount: 'Please fill all fields',
     invalidAmount: 'Invalid transfer amount',
     insufficientBalance: 'Insufficient balance',
@@ -361,6 +365,8 @@ function AppPRD() {
       });
       createdContractHash = generateContractHash();
       createdTxHash = generateTransactionHash();
+      steps[steps.length - 1].contractAddress = createdContractHash;
+      steps[steps.length - 1].transactionHash = createdTxHash;
       await delay(1800);
       setFlowSteps([...steps]);
 
@@ -467,6 +473,8 @@ function AppPRD() {
       });
       createdContractHash = generateContractHash();
       createdTxHash = generateTransactionHash();
+      steps[steps.length - 1].contractAddress = createdContractHash;
+      steps[steps.length - 1].transactionHash = createdTxHash;
       await delay(1500);
       setFlowSteps([...steps]);
 
@@ -645,6 +653,8 @@ function AppPRD() {
     });
     createdContractHash = generateContractHash();
     createdTxHash = generateTransactionHash();
+    steps[steps.length - 1].contractAddress = createdContractHash;
+    steps[steps.length - 1].transactionHash = createdTxHash;
     await delay(1500);
     setFlowSteps([...steps]);
 
@@ -1184,7 +1194,7 @@ function AppPRD() {
       </div>
 
       {/* Processing Flow Modal */}
-      {showFlowModal && (isTransferProcessing || isPurchaseProcessing) && (
+      {showFlowModal && flowSteps.length > 0 && (
         <div
           style={{
             position: 'fixed',
@@ -1235,6 +1245,26 @@ function AppPRD() {
               >
                 {t.processingTransaction}
               </h2>
+              {!isTransferProcessing && !isPurchaseProcessing && smartContractData && (
+                <button
+                  onClick={() => {
+                    setShowFlowModal(false);
+                    setShowContractModal(true);
+                  }}
+                  style={{
+                    background: '#f0f0f0',
+                    color: '#333',
+                    border: '1px solid #ddd',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                  }}
+                >
+                  {t.viewResult}
+                </button>
+              )}
             </div>
             <div style={{ marginTop: '20px' }}>
               {flowSteps.map((step, idx) => (
@@ -1350,6 +1380,72 @@ function AppPRD() {
                         ))}
                       </ul>
                     )}
+                    {(step.contractAddress || step.transactionHash) && (
+                      <div style={{ marginTop: '12px', display: 'grid', gap: '10px' }}>
+                        {step.contractAddress && (
+                          <div>
+                            <strong
+                              style={{
+                                fontSize: '12px',
+                                color: '#4a5568',
+                                display: 'block',
+                                marginBottom: '6px',
+                                fontWeight: '600',
+                                letterSpacing: '0.3px',
+                              }}
+                            >
+                              {t.contractAddress}
+                            </strong>
+                            <div
+                              style={{
+                                padding: '12px',
+                                background: '#f7fafc',
+                                borderRadius: '8px',
+                                fontFamily: 'Monaco, Menlo, "Courier New", monospace',
+                                fontSize: '12px',
+                                wordBreak: 'break-all',
+                                border: '2px solid #e2e8f0',
+                                color: '#2d3748',
+                                lineHeight: '1.6',
+                              }}
+                            >
+                              {step.contractAddress}
+                            </div>
+                          </div>
+                        )}
+                        {step.transactionHash && (
+                          <div>
+                            <strong
+                              style={{
+                                fontSize: '12px',
+                                color: '#4a5568',
+                                display: 'block',
+                                marginBottom: '6px',
+                                fontWeight: '600',
+                                letterSpacing: '0.3px',
+                              }}
+                            >
+                              {t.transactionId}
+                            </strong>
+                            <div
+                              style={{
+                                padding: '12px',
+                                background: '#f7fafc',
+                                borderRadius: '8px',
+                                fontFamily: 'Monaco, Menlo, "Courier New", monospace',
+                                fontSize: '12px',
+                                wordBreak: 'break-all',
+                                border: '2px solid #e2e8f0',
+                                color: '#2d3748',
+                                lineHeight: '1.6',
+                              }}
+                            >
+                              {step.transactionHash}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1410,6 +1506,27 @@ function AppPRD() {
               >
                 Data Smart Contract
               </h2>
+              {flowSteps.length > 0 && (
+                <button
+                  onClick={() => {
+                    setShowContractModal(false);
+                    setShowFlowModal(true);
+                  }}
+                  style={{
+                    background: '#f0f0f0',
+                    color: '#333',
+                    border: '1px solid #ddd',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    marginRight: '8px',
+                  }}
+                >
+                  {t.viewProcess}
+                </button>
+              )}
               <button
                 onClick={() => setShowContractModal(false)}
                 style={{

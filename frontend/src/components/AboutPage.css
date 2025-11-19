@@ -221,8 +221,11 @@
 }
 
 .benefit-icon {
-  font-size: 3em;
+  font-size: 1.2em;
+  font-weight: bold;
   margin-bottom: 15px;
+  text-transform: uppercase;
+  opacity: 0.9;
 }
 
 .benefit-card h3 {

@@ -1,45 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
 import './index.css';
 import AboutPage from './components/AboutPage';
 
-// Alamat kontrak (akan diisi setelah deployment)
-const BANK_MANDIRI_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
-const BANK_BCA_ADDRESS = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
-const INTER_BANK_NETWORK_ADDRESS = '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0';
+// Simulasi data untuk demo (tanpa blockchain)
+const DEMO_MODE = true;
 
-// ABI untuk Bank contract
-const BANK_ABI = [
-  "function bankName() view returns (string)",
-  "function bankCode() view returns (string)",
-  "function createAccount(string memory _accountNumber, string memory _accountName) external",
-  "function deposit(string memory _accountNumber) payable",
-  "function withdraw(string memory _accountNumber, uint256 _amount) external",
-  "function transferInternal(string memory _fromAccount, string memory _toAccount, uint256 _amount, string memory _description) external",
-  "function transferExternal(string memory _fromAccount, string memory _toBankCode, string memory _toAccount, uint256 _amount, string memory _description) external",
-  "function purchaseProduct(string memory _accountNumber, uint256 _productId) external",
-  "function addProduct(uint256 _productId, string memory _productName, uint256 _price, string memory _description) external",
-  "function getAccount(string memory _accountNumber) view returns (tuple(address accountAddress, string accountNumber, string accountName, uint256 balance, bool exists, uint256 createdAt))",
-  "function getBalance(string memory _accountNumber) view returns (uint256)",
-  "function getProduct(uint256 _productId) view returns (tuple(uint256 productId, string productName, uint256 price, bool isActive, string description))",
-  "function getAllProductIds() view returns (uint256[])",
-  "event AccountCreated(string indexed accountNumber, address indexed accountAddress, string accountName, uint256 timestamp)",
-  "event TransferInternal(string indexed fromAccount, string indexed toAccount, uint256 amount, string description, uint256 timestamp)",
-  "event TransferExternal(string indexed fromAccount, string indexed toBankCode, string indexed toAccount, uint256 amount, string description, uint256 timestamp)",
-  "event ProductPurchased(string indexed accountNumber, uint256 indexed productId, uint256 amount, string productName, uint256 timestamp)"
+// Data dummy untuk simulasi
+const initialAccounts = {
+  '1234567890': { accountNumber: '1234567890', accountName: 'Budi Santoso', balance: 10.5, bank: 'BM' },
+  '0987654321': { accountNumber: '0987654321', accountName: 'Siti Nurhaliza', balance: 5.0, bank: 'BM' },
+  '1111111111': { accountNumber: '1111111111', accountName: 'Ahmad Yani', balance: 8.0, bank: 'BCA' },
+};
+
+const initialProducts = [
+  { id: '1', name: 'Token Listrik 20kWh', price: 0.1, description: 'Token listrik untuk 20kWh - PLN' },
+  { id: '2', name: 'Token Listrik 50kWh', price: 0.25, description: 'Token listrik untuk 50kWh - PLN' },
+  { id: '3', name: 'Pulsa 50.000', price: 0.05, description: 'Pulsa seluler 50.000 untuk semua operator' },
+  { id: '4', name: 'Paket Data 10GB', price: 0.15, description: 'Paket data internet 10GB - 30 hari' },
 ];
 
 function App() {
-  const [provider, setProvider] = useState(null);
-  const [signer, setSigner] = useState(null);
-  const [account, setAccount] = useState(null);
-  const [currentBank, setCurrentBank] = useState(null);
-  const [bankContract, setBankContract] = useState(null);
+  const [accounts, setAccounts] = useState(() => {
+    const saved = localStorage.getItem('demo_accounts');
+    return saved ? JSON.parse(saved) : initialAccounts;
+  });
+  
+  const [products] = useState(initialProducts);
+  const [currentBank, setCurrentBank] = useState('BM');
   const [userAccountNumber, setUserAccountNumber] = useState('');
   const [userAccountName, setUserAccountName] = useState('');
   const [balance, setBalance] = useState('0');
   const [activeTab, setActiveTab] = useState('account');
-  const [products, setProducts] = useState([]);
   const [alert, setAlert] = useState({ type: '', message: '' });
   const [showAboutPage, setShowAboutPage] = useState(false);
 
@@ -59,197 +50,211 @@ function App() {
   const [withdrawAmount, setWithdrawAmount] = useState('');
 
   useEffect(() => {
-    connectWallet();
-    loadProducts();
-  }, []);
+    // Simpan ke localStorage setiap kali accounts berubah
+    localStorage.setItem('demo_accounts', JSON.stringify(accounts));
+  }, [accounts]);
 
   useEffect(() => {
-    if (userAccountNumber && bankContract) {
-      loadBalance();
-    }
-  }, [userAccountNumber, bankContract]);
-
-  const connectWallet = async () => {
-    try {
-      if (typeof window.ethereum !== 'undefined') {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await provider.send("eth_requestAccounts", []);
-        const signer = await provider.getSigner();
-        
-        setProvider(provider);
-        setSigner(signer);
-        setAccount(accounts[0]);
-
-        // Default ke Bank Mandiri
-        const bankContract = new ethers.Contract(BANK_MANDIRI_ADDRESS, BANK_ABI, signer);
-        setBankContract(bankContract);
-        setCurrentBank('BM');
-
-        showAlert('success', 'Wallet terhubung!');
-      } else {
-        showAlert('error', 'MetaMask tidak terdeteksi. Silakan install MetaMask.');
-      }
-    } catch (error) {
-      showAlert('error', `Error: ${error.message}`);
-    }
-  };
-
-  const switchBank = async (bankCode) => {
-    try {
-      const address = bankCode === 'BM' ? BANK_MANDIRI_ADDRESS : BANK_BCA_ADDRESS;
-      const contract = new ethers.Contract(address, BANK_ABI, signer);
-      setBankContract(contract);
-      setCurrentBank(bankCode);
-      setUserAccountNumber('');
+    if (userAccountNumber && accounts[userAccountNumber]) {
+      setBalance(accounts[userAccountNumber].balance.toFixed(4));
+      setUserAccountName(accounts[userAccountNumber].accountName);
+    } else {
       setBalance('0');
-      showAlert('success', `Berpindah ke ${bankCode === 'BM' ? 'Bank Mandiri' : 'Bank BCA'}`);
-    } catch (error) {
-      showAlert('error', `Error: ${error.message}`);
     }
+  }, [userAccountNumber, accounts]);
+
+  const switchBank = (bankCode) => {
+    setCurrentBank(bankCode);
+    setUserAccountNumber('');
+    setBalance('0');
+    showAlert('success', `Berpindah ke ${bankCode === 'BM' ? 'Bank Mandiri' : 'Bank BCA'}`);
   };
 
-  const createAccount = async () => {
-    try {
-      if (!userAccountNumber || !userAccountName) {
-        showAlert('error', 'Mohon isi nomor rekening dan nama');
-        return;
-      }
-
-      const tx = await bankContract.createAccount(userAccountNumber, userAccountName);
-      await tx.wait();
-      showAlert('success', 'Rekening berhasil dibuat!');
-      loadBalance();
-    } catch (error) {
-      showAlert('error', `Error: ${error.message}`);
+  const createAccount = () => {
+    if (!userAccountNumber || !userAccountName) {
+      showAlert('error', 'Mohon isi nomor rekening dan nama');
+      return;
     }
+
+    if (accounts[userAccountNumber]) {
+      showAlert('error', 'Rekening sudah ada');
+      return;
+    }
+
+    const newAccount = {
+      accountNumber: userAccountNumber,
+      accountName: userAccountName,
+      balance: 0,
+      bank: currentBank
+    };
+
+    setAccounts({ ...accounts, [userAccountNumber]: newAccount });
+    showAlert('success', 'Rekening berhasil dibuat!');
   };
 
-  const loadBalance = async () => {
-    try {
-      if (!userAccountNumber) return;
-      const balance = await bankContract.getBalance(userAccountNumber);
-      setBalance(ethers.formatEther(balance));
-    } catch (error) {
-      console.error('Error loading balance:', error);
+  const deposit = () => {
+    if (!userAccountNumber || !depositAmount) {
+      showAlert('error', 'Mohon isi nomor rekening dan jumlah deposit');
+      return;
     }
+
+    if (!accounts[userAccountNumber]) {
+      showAlert('error', 'Rekening tidak ditemukan');
+      return;
+    }
+
+    const amount = parseFloat(depositAmount);
+    if (isNaN(amount) || amount <= 0) {
+      showAlert('error', 'Jumlah deposit tidak valid');
+      return;
+    }
+
+    const updatedAccounts = { ...accounts };
+    updatedAccounts[userAccountNumber].balance += amount;
+    setAccounts(updatedAccounts);
+    showAlert('success', `Deposit ${depositAmount} ETH berhasil!`);
+    setDepositAmount('');
   };
 
-  const deposit = async () => {
-    try {
-      if (!userAccountNumber || !depositAmount) {
-        showAlert('error', 'Mohon isi nomor rekening dan jumlah deposit');
-        return;
-      }
-
-      const amount = ethers.parseEther(depositAmount);
-      const tx = await bankContract.deposit(userAccountNumber, { value: amount });
-      await tx.wait();
-      showAlert('success', `Deposit ${depositAmount} ETH berhasil!`);
-      setDepositAmount('');
-      loadBalance();
-    } catch (error) {
-      showAlert('error', `Error: ${error.message}`);
+  const withdraw = () => {
+    if (!userAccountNumber || !withdrawAmount) {
+      showAlert('error', 'Mohon isi nomor rekening dan jumlah penarikan');
+      return;
     }
+
+    if (!accounts[userAccountNumber]) {
+      showAlert('error', 'Rekening tidak ditemukan');
+      return;
+    }
+
+    const amount = parseFloat(withdrawAmount);
+    if (isNaN(amount) || amount <= 0) {
+      showAlert('error', 'Jumlah penarikan tidak valid');
+      return;
+    }
+
+    if (accounts[userAccountNumber].balance < amount) {
+      showAlert('error', 'Saldo tidak mencukupi');
+      return;
+    }
+
+    const updatedAccounts = { ...accounts };
+    updatedAccounts[userAccountNumber].balance -= amount;
+    setAccounts(updatedAccounts);
+    showAlert('success', `Penarikan ${withdrawAmount} ETH berhasil!`);
+    setWithdrawAmount('');
   };
 
-  const withdraw = async () => {
-    try {
-      if (!userAccountNumber || !withdrawAmount) {
-        showAlert('error', 'Mohon isi nomor rekening dan jumlah penarikan');
-        return;
-      }
-
-      const amount = ethers.parseEther(withdrawAmount);
-      const tx = await bankContract.withdraw(userAccountNumber, amount);
-      await tx.wait();
-      showAlert('success', `Penarikan ${withdrawAmount} ETH berhasil!`);
-      setWithdrawAmount('');
-      loadBalance();
-    } catch (error) {
-      showAlert('error', `Error: ${error.message}`);
+  const transferInternal = () => {
+    if (!userAccountNumber || !transferForm.toAccount || !transferForm.amount) {
+      showAlert('error', 'Mohon lengkapi semua field');
+      return;
     }
+
+    if (!accounts[userAccountNumber]) {
+      showAlert('error', 'Rekening pengirim tidak ditemukan');
+      return;
+    }
+
+    if (!accounts[transferForm.toAccount]) {
+      showAlert('error', 'Rekening penerima tidak ditemukan');
+      return;
+    }
+
+    if (userAccountNumber === transferForm.toAccount) {
+      showAlert('error', 'Tidak dapat transfer ke rekening sendiri');
+      return;
+    }
+
+    const amount = parseFloat(transferForm.amount);
+    if (isNaN(amount) || amount <= 0) {
+      showAlert('error', 'Jumlah transfer tidak valid');
+      return;
+    }
+
+    if (accounts[userAccountNumber].balance < amount) {
+      showAlert('error', 'Saldo tidak mencukupi');
+      return;
+    }
+
+    const updatedAccounts = { ...accounts };
+    updatedAccounts[userAccountNumber].balance -= amount;
+    updatedAccounts[transferForm.toAccount].balance += amount;
+    setAccounts(updatedAccounts);
+    showAlert('success', `Transfer ${transferForm.amount} ETH berhasil!`);
+    setTransferForm({ toAccount: '', amount: '', description: '' });
   };
 
-  const transferInternal = async () => {
-    try {
-      if (!userAccountNumber || !transferForm.toAccount || !transferForm.amount) {
-        showAlert('error', 'Mohon lengkapi semua field');
-        return;
-      }
-
-      const amount = ethers.parseEther(transferForm.amount);
-      const tx = await bankContract.transferInternal(
-        userAccountNumber,
-        transferForm.toAccount,
-        amount,
-        transferForm.description || 'Transfer Internal'
-      );
-      await tx.wait();
-      showAlert('success', `Transfer ${transferForm.amount} ETH berhasil!`);
-      setTransferForm({ toAccount: '', amount: '', description: '' });
-      loadBalance();
-    } catch (error) {
-      showAlert('error', `Error: ${error.message}`);
+  const transferExternal = () => {
+    if (!userAccountNumber || !externalTransferForm.toAccount || !externalTransferForm.amount) {
+      showAlert('error', 'Mohon lengkapi semua field');
+      return;
     }
+
+    if (!accounts[userAccountNumber]) {
+      showAlert('error', 'Rekening pengirim tidak ditemukan');
+      return;
+    }
+
+    const amount = parseFloat(externalTransferForm.amount);
+    if (isNaN(amount) || amount <= 0) {
+      showAlert('error', 'Jumlah transfer tidak valid');
+      return;
+    }
+
+    if (accounts[userAccountNumber].balance < amount) {
+      showAlert('error', 'Saldo tidak mencukupi');
+      return;
+    }
+
+    // Simulasi transfer antar bank
+    const updatedAccounts = { ...accounts };
+    updatedAccounts[userAccountNumber].balance -= amount;
+    
+    // Jika rekening tujuan ada, tambahkan saldo
+    if (accounts[externalTransferForm.toAccount]) {
+      updatedAccounts[externalTransferForm.toAccount].balance += amount;
+    } else {
+      // Buat rekening baru jika belum ada
+      updatedAccounts[externalTransferForm.toAccount] = {
+        accountNumber: externalTransferForm.toAccount,
+        accountName: 'Penerima',
+        balance: amount,
+        bank: externalTransferForm.toBankCode
+      };
+    }
+    
+    setAccounts(updatedAccounts);
+    showAlert('success', `Transfer antar bank ${externalTransferForm.amount} ETH berhasil!`);
+    setExternalTransferForm({ toBankCode: 'BCA', toAccount: '', amount: '', description: '' });
   };
 
-  const transferExternal = async () => {
-    try {
-      if (!userAccountNumber || !externalTransferForm.toAccount || !externalTransferForm.amount) {
-        showAlert('error', 'Mohon lengkapi semua field');
-        return;
-      }
-
-      const amount = ethers.parseEther(externalTransferForm.amount);
-      const tx = await bankContract.transferExternal(
-        userAccountNumber,
-        externalTransferForm.toBankCode,
-        externalTransferForm.toAccount,
-        amount,
-        externalTransferForm.description || 'Transfer Antar Bank'
-      );
-      await tx.wait();
-      showAlert('success', `Transfer antar bank ${externalTransferForm.amount} ETH berhasil!`);
-      setExternalTransferForm({ toBankCode: 'BCA', toAccount: '', amount: '', description: '' });
-      loadBalance();
-    } catch (error) {
-      showAlert('error', `Error: ${error.message}`);
+  const purchaseProduct = (productId) => {
+    if (!userAccountNumber) {
+      showAlert('error', 'Mohon masukkan nomor rekening Anda');
+      return;
     }
-  };
 
-  const loadProducts = async () => {
-    try {
-      if (!bankContract) return;
-      
-      const productIds = await bankContract.getAllProductIds();
-      const productPromises = productIds.map(id => bankContract.getProduct(id));
-      const productData = await Promise.all(productPromises);
-      
-      setProducts(productData.map((p, i) => ({
-        id: productIds[i].toString(),
-        name: p.productName,
-        price: ethers.formatEther(p.price),
-        description: p.description
-      })));
-    } catch (error) {
-      console.error('Error loading products:', error);
+    if (!accounts[userAccountNumber]) {
+      showAlert('error', 'Rekening tidak ditemukan');
+      return;
     }
-  };
 
-  const purchaseProduct = async (productId) => {
-    try {
-      if (!userAccountNumber) {
-        showAlert('error', 'Mohon masukkan nomor rekening Anda');
-        return;
-      }
-
-      const tx = await bankContract.purchaseProduct(userAccountNumber, productId);
-      await tx.wait();
-      showAlert('success', 'Produk berhasil dibeli!');
-      loadBalance();
-    } catch (error) {
-      showAlert('error', `Error: ${error.message}`);
+    const product = products.find(p => p.id === productId);
+    if (!product) {
+      showAlert('error', 'Produk tidak ditemukan');
+      return;
     }
+
+    if (accounts[userAccountNumber].balance < product.price) {
+      showAlert('error', 'Saldo tidak mencukupi');
+      return;
+    }
+
+    const updatedAccounts = { ...accounts };
+    updatedAccounts[userAccountNumber].balance -= product.price;
+    setAccounts(updatedAccounts);
+    showAlert('success', `Produk ${product.name} berhasil dibeli!`);
   };
 
   const showAlert = (type, message) => {
@@ -261,36 +266,23 @@ function App() {
     return <AboutPage onBack={() => setShowAboutPage(false)} />;
   }
 
-  if (!account) {
-    return (
-      <div className="container">
-        <div className="card">
-          <h2>Koneksi Wallet</h2>
-          <p>Silakan hubungkan wallet MetaMask Anda untuk melanjutkan.</p>
-          <button onClick={connectWallet}>Hubungkan MetaMask</button>
-          <div style={{ marginTop: '20px', textAlign: 'center' }}>
-            <button 
-              onClick={() => setShowAboutPage(true)}
-              style={{ background: '#28a745', width: 'auto' }}
-            >
-              📚 Pelajari tentang Smart Contract
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ margin: 0 }}>🏦 Sistem Perbankan dengan Smart Contract</h1>
+        <h1 style={{ margin: 0 }}>Sistem Perbankan dengan Smart Contract</h1>
         <button 
           onClick={() => setShowAboutPage(true)}
           style={{ background: '#28a745', width: 'auto', padding: '10px 20px' }}
         >
-          📚 Penjelasan Smart Contract
+          Penjelasan Smart Contract
         </button>
+      </div>
+
+      <div className="card" style={{ background: '#fff3cd', border: '2px solid #ffc107', marginBottom: '20px' }}>
+        <p style={{ margin: 0, color: '#856404' }}>
+          <strong>Mode Demo:</strong> Aplikasi ini berjalan dalam mode simulasi untuk pembelajaran. 
+          Tidak memerlukan MetaMask atau koneksi blockchain.
+        </p>
       </div>
 
       {alert.message && (
@@ -300,8 +292,7 @@ function App() {
       )}
 
       <div className="card">
-        <h2>Informasi Wallet</h2>
-        <p><strong>Alamat:</strong> {account}</p>
+        <h2>Pilih Bank</h2>
         <div style={{ marginTop: '15px' }}>
           <button 
             onClick={() => switchBank('BM')} 
@@ -369,7 +360,7 @@ function App() {
             <h2>Informasi Rekening</h2>
             <div className="account-info">
               <p><strong>Nomor Rekening:</strong> {userAccountNumber}</p>
-              <p><strong>Nama:</strong> {userAccountName}</p>
+              <p><strong>Nama:</strong> {userAccountName || accounts[userAccountNumber]?.accountName || '-'}</p>
               <p className="balance"><strong>Saldo:</strong> {balance} ETH</p>
             </div>
 
@@ -503,22 +494,18 @@ function App() {
       <div className={`tab-content ${activeTab === 'products' ? 'active' : ''}`}>
         <div className="card">
           <h2>Daftar Produk</h2>
-          {products.length === 0 ? (
-            <p>Tidak ada produk tersedia. Silakan hubungi admin untuk menambahkan produk.</p>
-          ) : (
-            <div className="product-grid">
-              {products.map((product) => (
-                <div key={product.id} className="product-card">
-                  <h4>{product.name}</h4>
-                  <p>{product.description}</p>
-                  <p className="product-price">{product.price} ETH</p>
-                  <button onClick={() => purchaseProduct(product.id)}>
-                    Beli Sekarang
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="product-grid">
+            {products.map((product) => (
+              <div key={product.id} className="product-card">
+                <h4>{product.name}</h4>
+                <p>{product.description}</p>
+                <p className="product-price">{product.price} ETH</p>
+                <button onClick={() => purchaseProduct(product.id)}>
+                  Beli Sekarang
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -526,4 +513,3 @@ function App() {
 }
 
 export default App;
-

@@ -2,12 +2,12 @@
 
 Sistem perbankan sederhana berbasis blockchain menggunakan smart contract untuk mengelola transaksi perbankan di Indonesia. Sistem ini mencakup transfer antar rekening, transfer antar bank, dan pembelian produk digital seperti token listrik.
 
-## ✨ Fitur Baru
+## Fitur Baru
 
-- **📚 Halaman Penjelasan Smart Contract**: Halaman edukasi yang menjelaskan smart contract dengan bahasa yang mudah dipahami untuk non-technical users. Cocok untuk presentasi thesis!
-- **🚀 GitHub Pages Ready**: Aplikasi siap di-deploy ke GitHub Pages dengan GitHub Actions
+- **Halaman Penjelasan Smart Contract**: Halaman edukasi yang menjelaskan smart contract dengan bahasa yang mudah dipahami untuk non-technical users. Cocok untuk presentasi thesis!
+- **GitHub Pages Ready**: Aplikasi siap di-deploy ke GitHub Pages dengan GitHub Actions
 
-## 📋 Daftar Isi
+## Daftar Isi
 
 1. [Contoh Case Implementasi](#1-contoh-case-implementasi)
 2. [Bentuk atau Wujud Smart Contract](#2-bentuk-atau-wujud-smart-contract)
@@ -154,12 +154,12 @@ contract Bank is Ownable, ReentrancyGuard {
 ```
 
 **Fitur Utama:**
-- ✅ Pembuatan rekening baru
-- ✅ Deposit dan withdrawal
-- ✅ Transfer internal (sesama bank)
-- ✅ Transfer eksternal (antar bank)
-- ✅ Manajemen produk digital
-- ✅ Pembelian produk
+- Pembuatan rekening baru
+- Deposit dan withdrawal
+- Transfer internal (sesama bank)
+- Transfer eksternal (antar bank)
+- Manajemen produk digital
+- Pembelian produk
 
 #### B. Contract `InterBankNetwork.sol`
 
@@ -179,9 +179,9 @@ contract InterBankNetwork is Ownable {
 ```
 
 **Fitur Utama:**
-- ✅ Registrasi bank ke dalam jaringan
-- ✅ Koordinasi transfer antar bank
-- ✅ Validasi bank yang terdaftar
+- Registrasi bank ke dalam jaringan
+- Koordinasi transfer antar bank
+- Validasi bank yang terdaftar
 
 ### 2.2 Karakteristik Smart Contract
 
@@ -259,10 +259,10 @@ Smart contract mengotomatisasi proses perbankan:
 - Mengurangi waktu proses transaksi
 
 **Keuntungan:**
-- ⚡ Transaksi lebih cepat (detik vs hari)
-- 💰 Biaya lebih rendah (tidak ada biaya admin manual)
-- 🔒 Lebih aman (tidak ada risiko human error)
-- 📊 Transparansi penuh (semua pihak dapat melihat)
+- Transaksi lebih cepat (detik vs hari)
+- Biaya lebih rendah (tidak ada biaya admin manual)
+- Lebih aman (tidak ada risiko human error)
+- Transparansi penuh (semua pihak dapat melihat)
 
 ---
 
@@ -459,8 +459,8 @@ npm run dev
 
 Sebelum menggunakan aplikasi, Anda dapat membaca penjelasan lengkap tentang smart contract:
 
-1. Klik tombol **"📚 Penjelasan Smart Contract"** di pojok kanan atas
-2. Atau klik **"📚 Pelajari tentang Smart Contract"** di halaman awal
+1. Klik tombol **"Penjelasan Smart Contract"** di pojok kanan atas
+2. Atau klik **"Pelajari tentang Smart Contract"** di halaman awal
 3. Halaman ini menjelaskan:
    - Apa itu smart contract (dengan analogi sederhana)
    - Mengapa smart contract penting
@@ -560,11 +560,11 @@ angela-smart-contract/
 ## Keamanan
 
 Smart contract ini menggunakan:
-- ✅ OpenZeppelin Contracts untuk security best practices
-- ✅ ReentrancyGuard untuk mencegah reentrancy attacks
-- ✅ Ownable untuk access control
-- ✅ Input validation untuk semua fungsi
-- ✅ Event logging untuk audit trail
+- OpenZeppelin Contracts untuk security best practices
+- ReentrancyGuard untuk mencegah reentrancy attacks
+- Ownable untuk access control
+- Input validation untuk semua fungsi
+- Event logging untuk audit trail
 
 ---
 

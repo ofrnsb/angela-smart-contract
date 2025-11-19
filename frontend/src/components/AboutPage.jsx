@@ -9,7 +9,7 @@ function AboutPage({ onBack }) {
       </button>
 
       <div className="about-content">
-        <h1>📚 Penjelasan Smart Contract untuk Sistem Perbankan</h1>
+        <h1>Penjelasan Smart Contract untuk Sistem Perbankan</h1>
         
         <section className="about-section">
           <h2>1. Apa itu Smart Contract?</h2>
@@ -21,16 +21,16 @@ function AboutPage({ onBack }) {
               dan mesin secara otomatis memberikan produk tersebut tanpa perlu campur tangan manusia.
             </p>
             <div className="analogy-box">
-              <h3>💡 Analogi Sederhana:</h3>
+              <h3>Analogi Sederhana:</h3>
               <p>
                 Jika perjanjian tradisional memerlukan notaris, saksi, dan dokumen kertas yang bisa hilang 
                 atau diubah, smart contract adalah perjanjian digital yang:
               </p>
               <ul>
-                <li>✅ <strong>Tidak bisa diubah</strong> - Setelah dibuat, tidak bisa dimanipulasi</li>
-                <li>✅ <strong>Otomatis</strong> - Menjalankan sendiri tanpa perlu manusia</li>
-                <li>✅ <strong>Transparan</strong> - Semua orang bisa melihat (tapi tidak bisa mengubah)</li>
-                <li>✅ <strong>Terpercaya</strong> - Tidak ada pihak ketiga yang bisa curang</li>
+                <li><strong>Tidak bisa diubah</strong> - Setelah dibuat, tidak bisa dimanipulasi</li>
+                <li><strong>Otomatis</strong> - Menjalankan sendiri tanpa perlu manusia</li>
+                <li><strong>Transparan</strong> - Semua orang bisa melihat (tapi tidak bisa mengubah)</li>
+                <li><strong>Terpercaya</strong> - Tidak ada pihak ketiga yang bisa curang</li>
               </ul>
             </div>
           </div>
@@ -39,10 +39,10 @@ function AboutPage({ onBack }) {
         <section className="about-section">
           <h2>2. Mengapa Smart Contract Penting?</h2>
           <div className="explanation-box">
-            <h3>🌍 Penggunaan di Dunia Nyata:</h3>
+            <h3>Penggunaan di Dunia Nyata:</h3>
             <div className="use-cases">
               <div className="use-case-card">
-                <h4>📈 Perdagangan Saham & Investasi</h4>
+                <h4>Perdagangan Saham & Investasi</h4>
                 <p>
                   Banyak platform trading menggunakan smart contract untuk:
                 </p>
@@ -55,7 +55,7 @@ function AboutPage({ onBack }) {
               </div>
 
               <div className="use-case-card">
-                <h4>🏦 Perbankan & Keuangan</h4>
+                <h4>Perbankan & Keuangan</h4>
                 <p>
                   Bank-bank besar mulai menggunakan smart contract untuk:
                 </p>
@@ -68,7 +68,7 @@ function AboutPage({ onBack }) {
               </div>
 
               <div className="use-case-card">
-                <h4>🏢 Perusahaan Besar (Big Companies)</h4>
+                <h4>Perusahaan Besar (Big Companies)</h4>
                 <p>
                   Perusahaan seperti IBM, Microsoft, dan lainnya menggunakan smart contract untuk:
                 </p>
@@ -86,11 +86,11 @@ function AboutPage({ onBack }) {
         <section className="about-section">
           <h2>3. Bagaimana Smart Contract Bekerja di Sistem Perbankan?</h2>
           <div className="explanation-box">
-            <h3>🔄 Proses Transfer Uang Tradisional vs Smart Contract:</h3>
+            <h3>Proses Transfer Uang Tradisional vs Smart Contract:</h3>
             
             <div className="comparison">
               <div className="comparison-card traditional">
-                <h4>❌ Sistem Tradisional</h4>
+                <h4>Sistem Tradisional</h4>
                 <ol>
                   <li>Anda minta transfer ke bank</li>
                   <li>Bank memverifikasi manual</li>
@@ -99,12 +99,12 @@ function AboutPage({ onBack }) {
                   <li>Uang sampai ke tujuan</li>
                 </ol>
                 <p className="disadvantage">
-                  ⏱️ Lama, 💰 Mahal, 🔒 Kurang transparan
+                  Lama, Mahal, Kurang transparan
                 </p>
               </div>
 
               <div className="comparison-card smart">
-                <h4>✅ Dengan Smart Contract</h4>
+                <h4>Dengan Smart Contract</h4>
                 <ol>
                   <li>Anda kirim permintaan transfer</li>
                   <li>Smart contract verifikasi otomatis</li>
@@ -113,7 +113,7 @@ function AboutPage({ onBack }) {
                   <li>Uang langsung sampai</li>
                 </ol>
                 <p className="advantage">
-                  ⚡ Cepat, 💵 Murah, 🔍 Transparan
+                  Cepat, Murah, Transparan
                 </p>
               </div>
             </div>
@@ -124,7 +124,7 @@ function AboutPage({ onBack }) {
           <h2>4. Keuntungan Smart Contract untuk Perbankan</h2>
           <div className="benefits-grid">
             <div className="benefit-card">
-              <div className="benefit-icon">⚡</div>
+              <div className="benefit-icon">Kecepatan</div>
               <h3>Kecepatan</h3>
               <p>
                 Transaksi bisa selesai dalam hitungan detik atau menit, 
@@ -133,7 +133,7 @@ function AboutPage({ onBack }) {
             </div>
 
             <div className="benefit-card">
-              <div className="benefit-icon">💰</div>
+              <div className="benefit-icon">Biaya</div>
               <h3>Biaya Rendah</h3>
               <p>
                 Mengurangi biaya operasional karena tidak perlu banyak 
@@ -142,7 +142,7 @@ function AboutPage({ onBack }) {
             </div>
 
             <div className="benefit-card">
-              <div className="benefit-icon">🔒</div>
+              <div className="benefit-icon">Keamanan</div>
               <h3>Keamanan Tinggi</h3>
               <p>
                 Data tersimpan di blockchain yang sangat sulit diretas 
@@ -151,7 +151,7 @@ function AboutPage({ onBack }) {
             </div>
 
             <div className="benefit-card">
-              <div className="benefit-icon">👁️</div>
+              <div className="benefit-icon">Transparansi</div>
               <h3>Transparansi</h3>
               <p>
                 Semua transaksi tercatat dan bisa diverifikasi, 
@@ -160,7 +160,7 @@ function AboutPage({ onBack }) {
             </div>
 
             <div className="benefit-card">
-              <div className="benefit-icon">🤖</div>
+              <div className="benefit-icon">Otomatisasi</div>
               <h3>Otomatisasi</h3>
               <p>
                 Tidak perlu campur tangan manusia, mengurangi 
@@ -169,7 +169,7 @@ function AboutPage({ onBack }) {
             </div>
 
             <div className="benefit-card">
-              <div className="benefit-icon">🌐</div>
+              <div className="benefit-icon">Global</div>
               <h3>Global</h3>
               <p>
                 Bisa digunakan di mana saja di dunia, 
@@ -182,7 +182,7 @@ function AboutPage({ onBack }) {
         <section className="about-section">
           <h2>5. Contoh Implementasi dalam Aplikasi Ini</h2>
           <div className="explanation-box">
-            <h3>🎯 Fitur yang Tersedia:</h3>
+            <h3>Fitur yang Tersedia:</h3>
             
             <div className="feature-example">
               <h4>1. Transfer Antar Rekening (Sesama Bank)</h4>
@@ -230,7 +230,7 @@ function AboutPage({ onBack }) {
           <h2>6. Mengapa Blockchain dan Smart Contract adalah Masa Depan?</h2>
           <div className="explanation-box">
             <div className="future-box">
-              <h3>🚀 Tren Global:</h3>
+              <h3>Tren Global:</h3>
               <ul>
                 <li>
                   <strong>Bank Sentral di berbagai negara</strong> sedang mengembangkan 
@@ -276,7 +276,7 @@ function AboutPage({ onBack }) {
               lebih cepat, lebih murah, dan lebih transparan.
             </p>
             <p className="highlight">
-              💡 Dengan smart contract, masa depan perbankan akan lebih efisien, 
+              Dengan smart contract, masa depan perbankan akan lebih efisien, 
               transparan, dan dapat diakses oleh semua orang!
             </p>
           </div>
@@ -295,4 +295,3 @@ function AboutPage({ onBack }) {
 }
 
 export default AboutPage;
-

@@ -35,7 +35,6 @@ function App() {
   const [products] = useState(initialProducts);
   const [currentBank, setCurrentBank] = useState('BM');
   const [userAccountNumber, setUserAccountNumber] = useState('');
-  const [userAccountName, setUserAccountName] = useState('');
   const [balance, setBalance] = useState('0');
   const [activeTab, setActiveTab] = useState('account');
   const [alert, setAlert] = useState({ type: '', message: '' });
@@ -67,7 +66,6 @@ function App() {
   useEffect(() => {
     if (userAccountNumber && accounts[userAccountNumber]) {
       setBalance(accounts[userAccountNumber].balance.toString());
-      setUserAccountName(accounts[userAccountNumber].accountName);
     } else {
       setBalance('0');
     }
@@ -80,27 +78,8 @@ function App() {
     showAlert('success', `Berpindah ke ${bankCode === 'BM' ? 'Bank Mandiri' : 'Bank BCA'}`);
   };
 
-  const createAccount = () => {
-    if (!userAccountNumber || !userAccountName) {
-      showAlert('error', 'Mohon isi nomor rekening dan nama');
-      return;
-    }
-
-    if (accounts[userAccountNumber]) {
-      showAlert('error', 'Rekening sudah ada');
-      return;
-    }
-
-    const newAccount = {
-      accountNumber: userAccountNumber,
-      accountName: userAccountName,
-      balance: 0,
-      bank: currentBank
-    };
-
-    setAccounts({ ...accounts, [userAccountNumber]: newAccount });
-    showAlert('success', 'Rekening berhasil dibuat!');
-    displayContractViewer('createAccount', { accountNumber: userAccountNumber, accountName: userAccountName });
+  const handleAccountSelect = (accountNumber) => {
+    setUserAccountNumber(accountNumber);
   };
 
   const deposit = () => {
@@ -297,36 +276,6 @@ function App() {
   // Fungsi untuk generate smart contract code
   const generateContractCode = (type, params) => {
     switch(type) {
-      case 'createAccount':
-        return `function createAccount(
-    string memory _accountNumber,
-    string memory _accountName
-) external {
-    require(bytes(_accountNumber).length > 0, "Nomor rekening tidak boleh kosong");
-    require(bytes(_accountName).length > 0, "Nama rekening tidak boleh kosong");
-    require(!accounts[_accountNumber].exists, "Rekening sudah ada");
-
-    accounts[_accountNumber] = Account({
-        accountAddress: msg.sender,
-        accountNumber: _accountNumber,
-        accountName: _accountName,
-        balance: 0,
-        exists: true,
-        createdAt: block.timestamp
-    });
-
-    emit AccountCreated(
-        _accountNumber,
-        msg.sender,
-        _accountName,
-        block.timestamp
-    );
-}
-
-// Parameter yang digunakan:
-// _accountNumber: "${params.accountNumber}"
-// _accountName: "${params.accountName}"`;
-
       case 'deposit':
         return `function deposit(string memory _accountNumber) external payable {
     require(accounts[_accountNumber].exists, "Rekening tidak ditemukan");
@@ -339,7 +288,7 @@ function App() {
 
 // Parameter yang digunakan:
 // _accountNumber: "${params.accountNumber}"
-// msg.value: ${params.amount} (dalam wei/smallest unit)
+// msg.value: ${parseFloat(params.amount).toLocaleString('id-ID')} (dalam Rupiah)
 // Jumlah: Rp ${parseFloat(params.amount).toLocaleString('id-ID')}`;
 
       case 'withdraw':
@@ -613,34 +562,33 @@ function App() {
       {/* Tab Rekening */}
       <div className={`tab-content ${activeTab === 'account' ? 'active' : ''}`}>
         <div className="card">
-          <h2>Buat/Buka Rekening</h2>
+          <h2>Pilih Rekening</h2>
           <div className="form-group">
-            <label>Nomor Rekening</label>
-            <input
-              type="text"
+            <label>Pilih Rekening</label>
+            <select
               value={userAccountNumber}
-              onChange={(e) => setUserAccountNumber(e.target.value)}
-              placeholder="Contoh: 1234567890"
-            />
+              onChange={(e) => handleAccountSelect(e.target.value)}
+              style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '16px' }}
+            >
+              <option value="">-- Pilih Rekening --</option>
+              {Object.values(accounts)
+                .filter(acc => acc.bank === currentBank)
+                .map(acc => (
+                  <option key={acc.accountNumber} value={acc.accountNumber}>
+                    {acc.accountName} - {acc.accountNumber} (Saldo: Rp {acc.balance.toLocaleString('id-ID')})
+                  </option>
+                ))}
+            </select>
           </div>
-          <div className="form-group">
-            <label>Nama Pemilik Rekening</label>
-            <input
-              type="text"
-              value={userAccountName}
-              onChange={(e) => setUserAccountName(e.target.value)}
-              placeholder="Nama lengkap"
-            />
-          </div>
-          <button onClick={createAccount}>Buat Rekening</button>
         </div>
 
-        {userAccountNumber && (
+        {userAccountNumber && accounts[userAccountNumber] && (
           <div className="card">
             <h2>Informasi Rekening</h2>
             <div className="account-info">
               <p><strong>Nomor Rekening:</strong> {userAccountNumber}</p>
-              <p><strong>Nama:</strong> {userAccountName || accounts[userAccountNumber]?.accountName || '-'}</p>
+              <p><strong>Nama:</strong> {accounts[userAccountNumber].accountName}</p>
+              <p><strong>Bank:</strong> {accounts[userAccountNumber].bank === 'BM' ? 'Bank Mandiri' : 'Bank BCA'}</p>
               <p className="balance"><strong>Saldo:</strong> Rp {parseFloat(balance || 0).toLocaleString('id-ID')}</p>
             </div>
 
@@ -651,8 +599,9 @@ function App() {
                 type="number"
                 value={depositAmount}
                 onChange={(e) => setDepositAmount(e.target.value)}
-                placeholder="0.0"
-                step="0.001"
+                placeholder="0"
+                step="1000"
+                min="0"
               />
             </div>
             <button onClick={deposit}>Deposit</button>
@@ -664,8 +613,9 @@ function App() {
                 type="number"
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
-                placeholder="0.0"
-                step="0.001"
+                placeholder="0"
+                step="1000"
+                min="0"
               />
             </div>
             <button onClick={withdraw}>Tarik</button>
@@ -678,31 +628,48 @@ function App() {
         <div className="card">
           <h2>Transfer Antar Rekening (Sesama Bank)</h2>
           <div className="form-group">
-            <label>Nomor Rekening Pengirim</label>
-            <input
-              type="text"
+            <label>Rekening Pengirim</label>
+            <select
               value={userAccountNumber}
-              onChange={(e) => setUserAccountNumber(e.target.value)}
-              placeholder="Nomor rekening Anda"
-            />
+              onChange={(e) => handleAccountSelect(e.target.value)}
+              style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '16px' }}
+            >
+              <option value="">-- Pilih Rekening Pengirim --</option>
+              {Object.values(accounts)
+                .filter(acc => acc.bank === currentBank)
+                .map(acc => (
+                  <option key={acc.accountNumber} value={acc.accountNumber}>
+                    {acc.accountName} - {acc.accountNumber} (Saldo: Rp {acc.balance.toLocaleString('id-ID')})
+                  </option>
+                ))}
+            </select>
           </div>
           <div className="form-group">
-            <label>Nomor Rekening Penerima</label>
-            <input
-              type="text"
+            <label>Rekening Penerima</label>
+            <select
               value={transferForm.toAccount}
               onChange={(e) => setTransferForm({ ...transferForm, toAccount: e.target.value })}
-              placeholder="Nomor rekening tujuan"
-            />
+              style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '16px' }}
+            >
+              <option value="">-- Pilih Rekening Penerima --</option>
+              {Object.values(accounts)
+                .filter(acc => acc.bank === currentBank && acc.accountNumber !== userAccountNumber)
+                .map(acc => (
+                  <option key={acc.accountNumber} value={acc.accountNumber}>
+                    {acc.accountName} - {acc.accountNumber} (Saldo: Rp {acc.balance.toLocaleString('id-ID')})
+                  </option>
+                ))}
+            </select>
           </div>
           <div className="form-group">
-            <label>Jumlah (ETH)</label>
+            <label>Jumlah (Rupiah)</label>
             <input
               type="number"
               value={transferForm.amount}
               onChange={(e) => setTransferForm({ ...transferForm, amount: e.target.value })}
               placeholder="0"
               step="1000"
+              min="0"
             />
           </div>
           <div className="form-group">
@@ -720,13 +687,21 @@ function App() {
         <div className="card">
           <h2>Transfer Antar Bank</h2>
           <div className="form-group">
-            <label>Nomor Rekening Pengirim</label>
-            <input
-              type="text"
+            <label>Rekening Pengirim</label>
+            <select
               value={userAccountNumber}
-              onChange={(e) => setUserAccountNumber(e.target.value)}
-              placeholder="Nomor rekening Anda"
-            />
+              onChange={(e) => handleAccountSelect(e.target.value)}
+              style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '16px' }}
+            >
+              <option value="">-- Pilih Rekening Pengirim --</option>
+              {Object.values(accounts)
+                .filter(acc => acc.bank === currentBank)
+                .map(acc => (
+                  <option key={acc.accountNumber} value={acc.accountNumber}>
+                    {acc.accountName} - {acc.accountNumber} (Saldo: Rp {acc.balance.toLocaleString('id-ID')})
+                  </option>
+                ))}
+            </select>
           </div>
           <div className="form-group">
             <label>Bank Tujuan</label>
@@ -748,13 +723,14 @@ function App() {
             />
           </div>
           <div className="form-group">
-            <label>Jumlah (ETH)</label>
+            <label>Jumlah (Rupiah)</label>
             <input
               type="number"
               value={externalTransferForm.amount}
               onChange={(e) => setExternalTransferForm({ ...externalTransferForm, amount: e.target.value })}
               placeholder="0"
               step="1000"
+              min="0"
             />
           </div>
           <div className="form-group">

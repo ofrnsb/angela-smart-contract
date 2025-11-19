@@ -150,18 +150,25 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
         <button
           onClick={() => onLanguageChange && onLanguageChange(language === 'id' ? 'en' : 'id')}
           style={{ 
-            background: '#667eea', 
-            color: 'white', 
-            border: 'none', 
-            padding: '10px 20px', 
-            borderRadius: '8px', 
+            background: '#f0f0f0', 
+            color: '#333', 
+            border: '1px solid #ddd', 
+            padding: '6px 12px', 
+            borderRadius: '6px', 
             cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '600',
-            transition: 'all 0.2s'
+            fontSize: '12px',
+            fontWeight: '500',
+            transition: 'all 0.2s',
+            minWidth: '40px'
           }}
-          onMouseOver={(e) => e.target.style.background = '#5568d3'}
-          onMouseOut={(e) => e.target.style.background = '#667eea'}
+          onMouseOver={(e) => {
+            e.target.style.background = '#e0e0e0';
+            e.target.style.borderColor = '#bbb';
+          }}
+          onMouseOut={(e) => {
+            e.target.style.background = '#f0f0f0';
+            e.target.style.borderColor = '#ddd';
+          }}
         >
           {language === 'id' ? 'EN' : 'ID'}
         </button>

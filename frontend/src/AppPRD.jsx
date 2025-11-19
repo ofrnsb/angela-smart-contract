@@ -612,43 +612,85 @@ function AppPRD() {
     <div className="container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
         <h1 style={{ margin: 0 }}>{t.title}</h1>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button
             onClick={() => setLanguage(language === 'id' ? 'en' : 'id')}
             style={{ 
-              background: '#667eea', 
-              color: 'white', 
-              border: 'none', 
-              padding: '10px 20px', 
-              borderRadius: '8px', 
+              background: '#f0f0f0', 
+              color: '#333', 
+              border: '1px solid #ddd', 
+              padding: '6px 12px', 
+              borderRadius: '6px', 
               cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
-              transition: 'all 0.2s'
+              fontSize: '12px',
+              fontWeight: '500',
+              transition: 'all 0.2s',
+              minWidth: '40px'
             }}
-            onMouseOver={(e) => e.target.style.background = '#5568d3'}
-            onMouseOut={(e) => e.target.style.background = '#667eea'}
+            onMouseOver={(e) => {
+              e.target.style.background = '#e0e0e0';
+              e.target.style.borderColor = '#bbb';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = '#f0f0f0';
+              e.target.style.borderColor = '#ddd';
+            }}
           >
             {language === 'id' ? 'EN' : 'ID'}
           </button>
           <button 
             onClick={() => setShowAboutPage(true)}
-            style={{ background: '#28a745', width: 'auto', padding: '10px 20px', border: 'none', borderRadius: '8px', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+            style={{ 
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+              width: 'auto', 
+              padding: '10px 20px', 
+              border: 'none', 
+              borderRadius: '8px', 
+              color: 'white', 
+              cursor: 'pointer', 
+              fontWeight: '600',
+              fontSize: '14px',
+              boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => {
+              e.target.style.transform = 'translateY(-1px)';
+              e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.3)';
+            }}
           >
             {t.aboutButton}
           </button>
         </div>
       </div>
 
-      <div className="card" style={{ background: '#e7f3ff', border: '2px solid #2196F3', marginBottom: '20px' }}>
-        <p style={{ margin: 0, color: '#1565C0' }}>
-          <strong>Demo Mode:</strong> {t.demoNote}
+      <div className="card" style={{ 
+        background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)', 
+        border: 'none', 
+        marginBottom: '24px',
+        padding: '16px 20px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+      }}>
+        <p style={{ margin: 0, color: '#1976d2', fontSize: '14px', lineHeight: '1.6' }}>
+          <strong style={{ fontWeight: '600' }}>Demo Mode:</strong> {t.demoNote}
         </p>
       </div>
 
       {/* Transfer Panel */}
-      <div className="card">
-        <h2>{t.transfer}</h2>
+      <div className="card" style={{ background: 'white' }}>
+        <h2 style={{ 
+          color: '#1a202c', 
+          fontSize: '1.75rem', 
+          fontWeight: '700', 
+          marginBottom: '28px',
+          paddingBottom: '16px',
+          borderBottom: '2px solid #e2e8f0'
+        }}>
+          {t.transfer}
+        </h2>
         <div className="form-group">
           <label>{t.fromAccount}</label>
           <select
@@ -738,15 +780,31 @@ function AppPRD() {
         <button 
           onClick={handleTransfer}
           disabled={isProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount}
-          style={{ opacity: (isProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) ? 0.6 : 1 }}
+          style={{ 
+            width: '100%',
+            marginTop: '8px',
+            opacity: (isProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) ? 0.5 : 1,
+            background: (isProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) 
+              ? 'linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%)' 
+              : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+          }}
         >
           {isProcessing ? t.processing : t.submitTransfer}
         </button>
       </div>
 
       {/* Product Purchase Panel */}
-      <div className="card">
-        <h2>{t.purchase}</h2>
+      <div className="card" style={{ background: 'white' }}>
+        <h2 style={{ 
+          color: '#1a202c', 
+          fontSize: '1.75rem', 
+          fontWeight: '700', 
+          marginBottom: '28px',
+          paddingBottom: '16px',
+          borderBottom: '2px solid #e2e8f0'
+        }}>
+          {t.purchase}
+        </h2>
         <div className="form-group">
           <label>{t.buyerAccount}</label>
           <select
@@ -810,7 +868,14 @@ function AppPRD() {
         <button 
           onClick={handlePurchase}
           disabled={isProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId}
-          style={{ opacity: (isProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId) ? 0.6 : 1 }}
+          style={{ 
+            width: '100%',
+            marginTop: '8px',
+            opacity: (isProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId) ? 0.5 : 1,
+            background: (isProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId) 
+              ? 'linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%)' 
+              : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+          }}
         >
           {isProcessing ? t.processing : t.buyNow}
         </button>
@@ -837,62 +902,77 @@ function AppPRD() {
           <div 
             style={{
               background: 'white',
-              borderRadius: '12px',
-              padding: '30px',
+              borderRadius: '20px',
+              padding: '32px',
               maxWidth: '600px',
               width: '100%',
               maxHeight: '80vh',
               overflowY: 'auto',
-              boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+              border: '1px solid rgba(255,255,255,0.2)'
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ margin: 0, color: '#667eea' }}>{t.processingTransaction}</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', paddingBottom: '16px', borderBottom: '2px solid #e2e8f0' }}>
+              <h2 style={{ margin: 0, color: '#667eea', fontSize: '1.5rem', fontWeight: '700' }}>{t.processingTransaction}</h2>
             </div>
             <div style={{ marginTop: '20px' }}>
               {flowSteps.map((step, idx) => (
                 <div 
                   key={idx} 
                   style={{ 
-                    marginBottom: '15px',
-                    padding: '15px',
-                    background: step.status === 'completed' ? '#d4edda' : step.status === 'processing' ? '#fff3cd' : '#f8f9fa',
-                    border: `2px solid ${step.status === 'completed' ? '#28a745' : step.status === 'processing' ? '#ffc107' : '#e0e0e0'}`,
-                    borderRadius: '8px',
+                    marginBottom: '16px',
+                    padding: '18px',
+                    background: step.status === 'completed' 
+                      ? 'linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%)' 
+                      : step.status === 'processing' 
+                      ? 'linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)' 
+                      : '#f8f9fa',
+                    border: `2px solid ${step.status === 'completed' ? '#28a745' : step.status === 'processing' ? '#ffc107' : '#e2e8f0'}`,
+                    borderRadius: '12px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '15px'
+                    gap: '16px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: step.status === 'processing' ? '0 4px 12px rgba(255, 193, 7, 0.2)' : '0 2px 8px rgba(0,0,0,0.05)'
                   }}
                 >
                   <div style={{ 
-                    width: '40px', 
-                    height: '40px', 
+                    width: '44px', 
+                    height: '44px', 
                     borderRadius: '50%', 
-                    background: step.status === 'completed' ? '#28a745' : step.status === 'processing' ? '#ffc107' : '#e0e0e0',
+                    background: step.status === 'completed' 
+                      ? 'linear-gradient(135deg, #28a745 0%, #20c997 100%)' 
+                      : step.status === 'processing' 
+                      ? 'linear-gradient(135deg, #ffc107 0%, #ff9800 100%)' 
+                      : '#e2e8f0',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: 'white',
                     fontWeight: 'bold',
-                    flexShrink: 0
+                    flexShrink: 0,
+                    fontSize: step.status === 'completed' ? '20px' : '16px',
+                    boxShadow: step.status !== 'pending' ? '0 4px 12px rgba(0,0,0,0.15)' : 'none'
                   }}>
                     {step.status === 'completed' ? '✓' : step.step}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h3 style={{ margin: 0, fontSize: '16px' }}>{step.title}</h3>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#2d3748' }}>{step.title}</h3>
                       <span style={{ 
-                        fontSize: '12px', 
-                        color: '#666',
-                        background: '#e0e0e0',
-                        padding: '4px 8px',
-                        borderRadius: '4px'
+                        fontSize: '11px', 
+                        color: '#4a5568',
+                        background: '#edf2f7',
+                        padding: '6px 10px',
+                        borderRadius: '6px',
+                        fontWeight: '500',
+                        letterSpacing: '0.3px'
                       }}>
                         {step.node}
                       </span>
                     </div>
-                    <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '14px' }}>{step.description}</p>
+                    <p style={{ margin: 0, color: '#718096', fontSize: '14px', lineHeight: '1.5' }}>{step.description}</p>
                   </div>
                 </div>
               ))}
@@ -922,75 +1002,88 @@ function AppPRD() {
           <div 
             style={{
               background: 'white',
-              borderRadius: '12px',
-              padding: '30px',
+              borderRadius: '20px',
+              padding: '32px',
               maxWidth: '700px',
               width: '100%',
               maxHeight: '80vh',
               overflowY: 'auto',
-              boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+              border: '1px solid rgba(255,255,255,0.2)'
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ margin: 0, color: '#1976D2' }}>Data Smart Contract</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', paddingBottom: '16px', borderBottom: '2px solid #e2e8f0' }}>
+              <h2 style={{ margin: 0, color: '#1976D2', fontSize: '1.5rem', fontWeight: '700' }}>Data Smart Contract</h2>
               <button
                 onClick={() => setShowContractModal(false)}
                 style={{
-                  background: '#dc3545',
+                  background: '#ef4444',
                   color: 'white',
                   border: 'none',
                   borderRadius: '50%',
-                  width: '30px',
-                  height: '30px',
+                  width: '32px',
+                  height: '32px',
                   cursor: 'pointer',
-                  fontSize: '18px',
+                  fontSize: '20px',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.background = '#dc2626';
+                  e.target.style.transform = 'scale(1.1)';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = '#ef4444';
+                  e.target.style.transform = 'scale(1)';
                 }}
               >
                 ×
               </button>
             </div>
             <div style={{ marginTop: '15px' }}>
-              <div style={{ marginBottom: '25px', textAlign: 'center' }}>
-                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1976D2', marginBottom: '10px' }}>
+              <div style={{ marginBottom: '28px', textAlign: 'center', padding: '20px', background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)', borderRadius: '12px' }}>
+                <div style={{ fontSize: '20px', fontWeight: '700', color: '#1976D2', marginBottom: '12px', letterSpacing: '-0.3px' }}>
                   {t.smartContractExecuted}
                 </div>
-                <div style={{ fontSize: '14px', color: '#666' }}>
+                <div style={{ fontSize: '14px', color: '#4a5568', lineHeight: '1.6' }}>
                   {t.transactionRecorded}
                 </div>
               </div>
               
-              <div style={{ marginBottom: '20px' }}>
-                <strong style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '8px' }}>{t.contractAddress}</strong>
+              <div style={{ marginBottom: '24px' }}>
+                <strong style={{ fontSize: '13px', color: '#4a5568', display: 'block', marginBottom: '10px', fontWeight: '600', letterSpacing: '0.3px' }}>{t.contractAddress}</strong>
                 <div style={{ 
-                  padding: '12px', 
-                  background: '#f8f9fa', 
-                  borderRadius: '8px',
-                  fontFamily: 'monospace',
+                  padding: '16px', 
+                  background: '#f7fafc', 
+                  borderRadius: '12px',
+                  fontFamily: 'Monaco, Menlo, "Courier New", monospace',
                   fontSize: '13px',
                   wordBreak: 'break-all',
-                  border: '1px solid #e0e0e0',
-                  color: '#333'
+                  border: '2px solid #e2e8f0',
+                  color: '#2d3748',
+                  lineHeight: '1.6'
                 }}>
                   {smartContractData.contractAddress}
                 </div>
               </div>
               
               {smartContractData.result.transactionHash && (
-                <div style={{ marginBottom: '20px' }}>
-                  <strong style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '8px' }}>{t.transactionId}</strong>
+                <div style={{ marginBottom: '24px' }}>
+                  <strong style={{ fontSize: '13px', color: '#4a5568', display: 'block', marginBottom: '10px', fontWeight: '600', letterSpacing: '0.3px' }}>{t.transactionId}</strong>
                   <div style={{ 
-                    padding: '12px', 
-                    background: '#f8f9fa', 
-                    borderRadius: '8px',
-                    fontFamily: 'monospace',
+                    padding: '16px', 
+                    background: '#f7fafc', 
+                    borderRadius: '12px',
+                    fontFamily: 'Monaco, Menlo, "Courier New", monospace',
                     fontSize: '13px',
                     wordBreak: 'break-all',
-                    border: '1px solid #e0e0e0',
-                    color: '#333'
+                    border: '2px solid #e2e8f0',
+                    color: '#2d3748',
+                    lineHeight: '1.6'
                   }}>
                     {smartContractData.result.transactionHash}
                   </div>
@@ -998,13 +1091,13 @@ function AppPRD() {
               )}
               
               <div style={{ 
-                marginTop: '25px', 
-                padding: '15px', 
-                background: '#e7f3ff', 
-                borderRadius: '8px',
-                border: '1px solid #2196F3'
+                marginTop: '28px', 
+                padding: '18px', 
+                background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)', 
+                borderRadius: '12px',
+                border: '1px solid rgba(33, 150, 243, 0.2)'
               }}>
-                <div style={{ fontSize: '14px', color: '#1565C0', lineHeight: '1.6' }}>
+                <div style={{ fontSize: '14px', color: '#1976d2', lineHeight: '1.7', fontWeight: '500' }}>
                   {t.contractInfo}
                 </div>
               </div>
@@ -1013,14 +1106,16 @@ function AppPRD() {
               onClick={() => setShowContractModal(false)}
               style={{
                 width: '100%',
-                padding: '12px',
-                background: '#667eea',
+                padding: '14px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 color: 'white',
                 border: 'none',
-                borderRadius: '8px',
-                fontSize: '16px',
+                borderRadius: '10px',
+                fontSize: '15px',
                 cursor: 'pointer',
-                marginTop: '20px'
+                marginTop: '24px',
+                fontWeight: '600',
+                boxShadow: '0 4px 14px rgba(102, 126, 234, 0.25)'
               }}
             >
               {t.close}

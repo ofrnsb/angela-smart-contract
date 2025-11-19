@@ -221,11 +221,35 @@
 }
 
 .benefit-icon {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-bottom: 15px;
-  text-transform: uppercase;
-  opacity: 0.9;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+.process-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.process-step {
+  padding: 20px;
+  background: #f8f9fa;
+  border-left: 4px solid #667eea;
+  border-radius: 8px;
+}
+
+.process-step h4 {
+  margin: 0 0 10px 0;
+  color: #667eea;
+  font-size: 18px;
+}
+
+.process-step p {
+  margin: 0;
+  color: #555;
+  line-height: 1.6;
 }
 
 .benefit-card h3 {

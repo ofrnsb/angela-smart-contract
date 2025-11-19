@@ -3,6 +3,76 @@ import { ethers } from 'ethers';
 import './index.css';
 import AboutPage from './components/AboutPage';
 
+// Language translations
+const translations = {
+  id: {
+    title: 'Sistem Perbankan dengan Smart Contract',
+    aboutButton: 'Penjelasan Smart Contract',
+    demoNote: 'Demo Mode: Sistem ini menggunakan smart contract untuk memproses semua transaksi. Setiap transaksi divalidasi oleh multiple nodes untuk keamanan dan transparansi.',
+    transfer: 'Transfer',
+    fromAccount: 'Rekening Asal',
+    toAccount: 'Rekening Tujuan',
+    amount: 'Jumlah (IDR)',
+    memo: 'Catatan (Opsional)',
+    memoPlaceholder: 'Catatan transfer',
+    submitTransfer: 'Kirim Transfer',
+    processing: 'Memproses...',
+    purchase: 'Pembelian Produk',
+    buyerAccount: 'Rekening Pembeli',
+    product: 'Produk',
+    buyNow: 'Beli Sekarang',
+    selectFromAccount: '-- Pilih Rekening Asal --',
+    selectToAccount: '-- Pilih Rekening Tujuan --',
+    selectBuyerAccount: '-- Pilih Rekening --',
+    selectProduct: '-- Pilih Produk --',
+    processingTransaction: 'Memproses Transaksi...',
+    smartContractExecuted: 'Smart Contract yang Dieksekusi',
+    transactionRecorded: 'Transaksi Anda telah diproses dan tercatat di blockchain',
+    contractAddress: 'Alamat Smart Contract:',
+    transactionId: 'ID Transaksi:',
+    contractInfo: 'Informasi: Setiap transaksi menggunakan smart contract yang terenkripsi dan tersimpan permanen di blockchain. Alamat dan ID transaksi di atas dapat digunakan untuk memverifikasi transaksi Anda.',
+    close: 'Tutup',
+    selectAccount: 'Mohon lengkapi semua field',
+    invalidAmount: 'Jumlah transfer tidak valid',
+    insufficientBalance: 'Saldo tidak mencukupi',
+    sameAccount: 'Rekening asal dan tujuan tidak boleh sama',
+    selectProductError: 'Mohon pilih rekening dan produk'
+  },
+  en: {
+    title: 'Banking System with Smart Contract',
+    aboutButton: 'Smart Contract Explanation',
+    demoNote: 'Demo Mode: This system uses smart contracts to process all transactions. Each transaction is validated by multiple nodes for security and transparency.',
+    transfer: 'Transfer',
+    fromAccount: 'From Account',
+    toAccount: 'To Account',
+    amount: 'Amount (IDR)',
+    memo: 'Memo (Optional)',
+    memoPlaceholder: 'Transfer memo',
+    submitTransfer: 'Send Transfer',
+    processing: 'Processing...',
+    purchase: 'Product Purchase',
+    buyerAccount: 'Buyer Account',
+    product: 'Product',
+    buyNow: 'Buy Now',
+    selectFromAccount: '-- Select From Account --',
+    selectToAccount: '-- Select To Account --',
+    selectBuyerAccount: '-- Select Account --',
+    selectProduct: '-- Select Product --',
+    processingTransaction: 'Processing Transaction...',
+    smartContractExecuted: 'Executed Smart Contract',
+    transactionRecorded: 'Your transaction has been processed and recorded on the blockchain',
+    contractAddress: 'Smart Contract Address:',
+    transactionId: 'Transaction ID:',
+    contractInfo: 'Information: Every transaction uses an encrypted smart contract that is permanently stored on the blockchain. The address and transaction ID above can be used to verify your transaction.',
+    close: 'Close',
+    selectAccount: 'Please fill all fields',
+    invalidAmount: 'Invalid transfer amount',
+    insufficientBalance: 'Insufficient balance',
+    sameAccount: 'From and to accounts cannot be the same',
+    selectProductError: 'Please select account and product'
+  }
+};
+
 // Dummy bank accounts - langsung tersedia
 const DUMMY_ACCOUNTS = {
   '1234567890': { 
@@ -90,6 +160,9 @@ function AppPRD() {
   const [accounts, setAccounts] = useState(DUMMY_ACCOUNTS);
   const [products] = useState(DUMMY_PRODUCTS);
   const [showAboutPage, setShowAboutPage] = useState(false);
+  const [language, setLanguage] = useState('id');
+  
+  const t = translations[language];
   
   // Transfer form
   const [transferForm, setTransferForm] = useState({
@@ -475,7 +548,7 @@ function AppPRD() {
 
   const handleTransfer = async () => {
     if (!transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) {
-      alert('Mohon lengkapi semua field');
+      alert(t.selectAccount);
       return;
     }
 
@@ -484,17 +557,17 @@ function AppPRD() {
     const amount = parseFloat(transferForm.amount);
 
     if (isNaN(amount) || amount <= 0) {
-      alert('Jumlah transfer tidak valid');
+      alert(t.invalidAmount);
       return;
     }
 
     if (fromAcc.balance < amount) {
-      alert('Saldo tidak mencukupi');
+      alert(t.insufficientBalance);
       return;
     }
 
     if (fromAcc.accountNumber === toAcc.accountNumber) {
-      alert('Rekening asal dan tujuan tidak boleh sama');
+      alert(t.sameAccount);
       return;
     }
 
@@ -507,7 +580,7 @@ function AppPRD() {
 
   const handlePurchase = async () => {
     if (!purchaseForm.buyerAccount || !purchaseForm.productId) {
-      alert('Mohon pilih rekening dan produk');
+      alert(t.selectProductError);
       return;
     }
 
@@ -515,7 +588,7 @@ function AppPRD() {
     const product = products.find(p => p.id === parseInt(purchaseForm.productId));
 
     if (buyerAcc.balance < product.price) {
-      alert('Saldo tidak mencukupi');
+      alert(t.insufficientBalance);
       return;
     }
 
@@ -526,7 +599,7 @@ function AppPRD() {
   };
 
   if (showAboutPage) {
-    return <AboutPage onBack={() => setShowAboutPage(false)} />;
+    return <AboutPage onBack={() => setShowAboutPage(false)} language={language} />;
   }
 
   const accountList = Object.values(accounts);
@@ -552,43 +625,71 @@ function AppPRD() {
 
       {/* Transfer Panel */}
       <div className="card">
-        <h2>Transfer</h2>
+        <h2>{t.transfer}</h2>
         <div className="form-group">
-          <label>Rekening Asal</label>
+          <label>{t.fromAccount}</label>
           <select
             value={transferForm.fromAccount}
             onChange={(e) => setTransferForm({ ...transferForm, fromAccount: e.target.value })}
             disabled={isProcessing}
-            style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px' }}
+            style={{ 
+              width: '100%', 
+              padding: '14px', 
+              border: '2px solid #e0e0e0', 
+              borderRadius: '8px',
+              fontSize: '15px',
+              backgroundColor: isProcessing ? '#f5f5f5' : 'white',
+              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              appearance: 'none',
+              backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+              backgroundSize: '16px',
+              paddingRight: '40px'
+            }}
           >
-            <option value="">-- Pilih Rekening Asal --</option>
+            <option value="">{t.selectFromAccount}</option>
             {accountList.map(acc => (
               <option key={acc.accountNumber} value={acc.accountNumber}>
-                {acc.accountNumber} - {acc.accountName} ({acc.bank}) - Saldo: Rp {acc.balance.toLocaleString('id-ID')}
+                {acc.accountNumber} - {acc.accountName} ({acc.bank}) - {language === 'id' ? 'Saldo' : 'Balance'}: Rp {acc.balance.toLocaleString('id-ID')}
               </option>
             ))}
           </select>
         </div>
         <div className="form-group">
-          <label>Rekening Tujuan</label>
+          <label>{t.toAccount}</label>
           <select
             value={transferForm.toAccount}
             onChange={(e) => setTransferForm({ ...transferForm, toAccount: e.target.value })}
             disabled={isProcessing}
-            style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px' }}
+            style={{ 
+              width: '100%', 
+              padding: '14px', 
+              border: '2px solid #e0e0e0', 
+              borderRadius: '8px',
+              fontSize: '15px',
+              backgroundColor: isProcessing ? '#f5f5f5' : 'white',
+              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              appearance: 'none',
+              backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+              backgroundSize: '16px',
+              paddingRight: '40px'
+            }}
           >
-            <option value="">-- Pilih Rekening Tujuan --</option>
+            <option value="">{t.selectToAccount}</option>
             {accountList
               .filter(acc => acc.accountNumber !== transferForm.fromAccount)
               .map(acc => (
                 <option key={acc.accountNumber} value={acc.accountNumber}>
-                  {acc.accountNumber} - {acc.accountName} ({acc.bank}) - Saldo: Rp {acc.balance.toLocaleString('id-ID')}
+                  {acc.accountNumber} - {acc.accountName} ({acc.bank}) - {language === 'id' ? 'Saldo' : 'Balance'}: Rp {acc.balance.toLocaleString('id-ID')}
                 </option>
               ))}
           </select>
         </div>
         <div className="form-group">
-          <label>Jumlah (IDR)</label>
+          <label>{t.amount}</label>
           <input
             type="number"
             value={transferForm.amount}
@@ -597,18 +698,18 @@ function AppPRD() {
             step="1000"
             min="0"
             disabled={isProcessing}
-            style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px' }}
+            style={{ width: '100%', padding: '14px', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '15px' }}
           />
         </div>
         <div className="form-group">
-          <label>Catatan (Opsional)</label>
+          <label>{t.memo}</label>
           <input
             type="text"
             value={transferForm.memo}
             onChange={(e) => setTransferForm({ ...transferForm, memo: e.target.value })}
-            placeholder="Catatan transfer"
+            placeholder={t.memoPlaceholder}
             disabled={isProcessing}
-            style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px' }}
+            style={{ width: '100%', padding: '14px', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '15px' }}
           />
         </div>
         <button 
@@ -616,38 +717,66 @@ function AppPRD() {
           disabled={isProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount}
           style={{ opacity: (isProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) ? 0.6 : 1 }}
         >
-          {isProcessing ? 'Memproses...' : 'Kirim Transfer'}
+          {isProcessing ? t.processing : t.submitTransfer}
         </button>
       </div>
 
       {/* Product Purchase Panel */}
       <div className="card">
-        <h2>Pembelian Produk</h2>
+        <h2>{t.purchase}</h2>
         <div className="form-group">
-          <label>Rekening Pembeli</label>
+          <label>{t.buyerAccount}</label>
           <select
             value={purchaseForm.buyerAccount}
             onChange={(e) => setPurchaseForm({ ...purchaseForm, buyerAccount: e.target.value })}
             disabled={isProcessing}
-            style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px' }}
+            style={{ 
+              width: '100%', 
+              padding: '14px', 
+              border: '2px solid #e0e0e0', 
+              borderRadius: '8px',
+              fontSize: '15px',
+              backgroundColor: isProcessing ? '#f5f5f5' : 'white',
+              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              appearance: 'none',
+              backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+              backgroundSize: '16px',
+              paddingRight: '40px'
+            }}
           >
-            <option value="">-- Pilih Rekening --</option>
+            <option value="">{t.selectBuyerAccount}</option>
             {accountList.map(acc => (
               <option key={acc.accountNumber} value={acc.accountNumber}>
-                {acc.accountNumber} - {acc.accountName} ({acc.bank}) - Saldo: Rp {acc.balance.toLocaleString('id-ID')}
+                {acc.accountNumber} - {acc.accountName} ({acc.bank}) - {language === 'id' ? 'Saldo' : 'Balance'}: Rp {acc.balance.toLocaleString('id-ID')}
               </option>
             ))}
           </select>
         </div>
         <div className="form-group">
-          <label>Produk</label>
+          <label>{t.product}</label>
           <select
             value={purchaseForm.productId}
             onChange={(e) => setPurchaseForm({ ...purchaseForm, productId: e.target.value })}
             disabled={isProcessing}
-            style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px' }}
+            style={{ 
+              width: '100%', 
+              padding: '14px', 
+              border: '2px solid #e0e0e0', 
+              borderRadius: '8px',
+              fontSize: '15px',
+              backgroundColor: isProcessing ? '#f5f5f5' : 'white',
+              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              appearance: 'none',
+              backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+              backgroundSize: '16px',
+              paddingRight: '40px'
+            }}
           >
-            <option value="">-- Pilih Produk --</option>
+            <option value="">{t.selectProduct}</option>
             {products.map(product => (
               <option key={product.id} value={product.id}>
                 {product.name} - Rp {product.price.toLocaleString('id-ID')} ({product.provider})
@@ -660,7 +789,7 @@ function AppPRD() {
           disabled={isProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId}
           style={{ opacity: (isProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId) ? 0.6 : 1 }}
         >
-          {isProcessing ? 'Memproses...' : 'Beli Sekarang'}
+          {isProcessing ? t.processing : t.buyNow}
         </button>
       </div>
 
@@ -804,15 +933,15 @@ function AppPRD() {
             <div style={{ marginTop: '15px' }}>
               <div style={{ marginBottom: '25px', textAlign: 'center' }}>
                 <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1976D2', marginBottom: '10px' }}>
-                  Smart Contract yang Dieksekusi
+                  {t.smartContractExecuted}
                 </div>
                 <div style={{ fontSize: '14px', color: '#666' }}>
-                  Transaksi Anda telah diproses dan tercatat di blockchain
+                  {t.transactionRecorded}
                 </div>
               </div>
               
               <div style={{ marginBottom: '20px' }}>
-                <strong style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '8px' }}>Alamat Smart Contract:</strong>
+                <strong style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '8px' }}>{t.contractAddress}</strong>
                 <div style={{ 
                   padding: '12px', 
                   background: '#f8f9fa', 
@@ -829,7 +958,7 @@ function AppPRD() {
               
               {smartContractData.result.transactionHash && (
                 <div style={{ marginBottom: '20px' }}>
-                  <strong style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '8px' }}>ID Transaksi:</strong>
+                  <strong style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '8px' }}>{t.transactionId}</strong>
                   <div style={{ 
                     padding: '12px', 
                     background: '#f8f9fa', 
@@ -853,8 +982,7 @@ function AppPRD() {
                 border: '1px solid #2196F3'
               }}>
                 <div style={{ fontSize: '14px', color: '#1565C0', lineHeight: '1.6' }}>
-                  <strong>Informasi:</strong> Setiap transaksi menggunakan smart contract yang terenkripsi dan tersimpan permanen di blockchain. 
-                  Alamat dan ID transaksi di atas dapat digunakan untuk memverifikasi transaksi Anda.
+                  {t.contractInfo}
                 </div>
               </div>
             </div>
@@ -872,66 +1000,12 @@ function AppPRD() {
                 marginTop: '20px'
               }}
             >
-              Tutup
+              {t.close}
             </button>
           </div>
         </div>
       )}
 
-      {/* Transaction Result */}
-      {transactionResult && !isProcessing && (
-        <div className="card" style={{ 
-          background: transactionResult.success ? '#d4edda' : '#f8d7da', 
-          border: `2px solid ${transactionResult.success ? '#28a745' : '#dc3545'}` 
-        }}>
-          <h2 style={{ color: transactionResult.success ? '#155724' : '#721c24' }}>
-            {transactionResult.success ? '✓ Transaksi Berhasil' : '✗ Transaksi Gagal'}
-          </h2>
-          <p style={{ margin: '10px 0', color: transactionResult.success ? '#155724' : '#721c24' }}>
-            {transactionResult.message}
-          </p>
-          {transactionResult.fromBalance !== undefined && (
-            <p style={{ margin: '5px 0', color: transactionResult.success ? '#155724' : '#721c24' }}>
-              Saldo rekening asal: Rp {transactionResult.fromBalance.toLocaleString('id-ID')}
-            </p>
-          )}
-          {transactionResult.toBalance !== undefined && (
-            <p style={{ margin: '5px 0', color: transactionResult.success ? '#155724' : '#721c24' }}>
-              Saldo rekening tujuan: Rp {transactionResult.toBalance.toLocaleString('id-ID')}
-            </p>
-          )}
-          {transactionResult.remainingBalance !== undefined && (
-            <p style={{ margin: '5px 0', color: transactionResult.success ? '#155724' : '#721c24' }}>
-              Saldo tersisa: Rp {transactionResult.remainingBalance.toLocaleString('id-ID')}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Account List */}
-      <div className="card">
-        <h2>Daftar Rekening</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '15px', marginTop: '15px' }}>
-          {accountList.map(acc => (
-            <div 
-              key={acc.accountNumber} 
-              style={{ 
-                padding: '15px', 
-                background: '#f8f9fa', 
-                borderRadius: '8px',
-                border: '1px solid #e0e0e0'
-              }}
-            >
-              <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{acc.accountName}</div>
-              <div style={{ color: '#666', fontSize: '14px' }}>No. Rekening: {acc.accountNumber}</div>
-              <div style={{ color: '#666', fontSize: '14px' }}>Bank: {acc.bank}</div>
-              <div style={{ color: '#28a745', fontWeight: 'bold', marginTop: '10px' }}>
-                Saldo: Rp {acc.balance.toLocaleString('id-ID')}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

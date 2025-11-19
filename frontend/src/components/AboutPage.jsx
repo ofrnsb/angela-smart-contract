@@ -5,9 +5,8 @@ const translations = {
   id: {
     back: '← Kembali ke Aplikasi',
     title:
-      'Penjelasan Lengkap Smart Contract untuk Sistem Perbankan Konvensional Indonesia',
-    subtitle:
-      '(Versi teori komprehensif - menyatukan seluruh penjelasan sebelumnya + arsitektur node antar bank)',
+      'Smart Contract dan Implementasinya pada Sistem Perbankan Konvensional Indonesia',
+    subtitle: '',
 
     // 1. Pendahuluan
     intro:
@@ -242,9 +241,8 @@ const translations = {
   en: {
     back: '← Back to Application',
     title:
-      'Comprehensive Explanation of Smart Contracts for Conventional Indonesian Banking System',
-    subtitle:
-      '(Comprehensive theory version - unifying all previous explanations + interbank node architecture)',
+      'Smart Contracts and the Implementation for Conventional Indonesian Banking System',
+    subtitle: '',
 
     // 1. Introduction
     intro:

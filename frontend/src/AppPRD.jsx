@@ -3,481 +3,501 @@ import { ethers } from 'ethers';
 import './index.css';
 import AboutPage from './components/AboutPage';
 
-// Contract ABIs (simplified for demo)
-const IDR_TOKEN_ABI = [
-  "function balanceOf(address) view returns (uint256)",
-  "function transfer(address,uint256) returns (bool)",
-  "function approve(address,uint256) returns (bool)",
-  "function allowance(address,address) view returns (uint256)",
-  "event Transfer(address indexed from, address indexed to, uint256 value)"
-];
-
-const ACCOUNT_REGISTRY_ABI = [
-  "function resolveAccount(string) view returns (address,address)",
-  "function getAccount(string) view returns (tuple(string,address,address,bool,uint256))",
-  "function getAllAccountNumbers() view returns (string[])",
-  "event AccountRegistered(string indexed,address indexed,address indexed,uint256)"
-];
-
-const INTERBANK_SETTLEMENT_ABI = [
-  "function proposeTransfer(string,string,uint256)",
-  "function approveTransfer(uint256)",
-  "function getTransferRequest(uint256) view returns (string,string,uint256,address,uint256,bool,uint256,uint256)",
-  "function nextRequestId() view returns (uint256)",
-  "event TransferProposed(uint256 indexed,string indexed,string indexed,uint256,address,uint256)",
-  "event TransferApproved(uint256 indexed,address indexed,uint256,uint256)",
-  "event InterbankSettled(uint256 indexed,string indexed,string indexed,uint256,uint256)"
-];
-
-const PRODUCT_CATALOG_ABI = [
-  "function getProduct(uint256) view returns (tuple(uint256,string,address,uint256,bool,string,uint256))",
-  "function getAllProductIds() view returns (uint256[])",
-  "function getActiveProducts() view returns (uint256[])"
-];
-
-const PURCHASE_PROCESSOR_ABI = [
-  "function createPurchase(string,uint256) returns (uint256)",
-  "function markFulfilled(uint256)",
-  "function markFailed(uint256,string)",
-  "function getOrder(uint256) view returns (tuple(uint256,string,address,uint256,uint256,address,uint8,uint256,uint256,uint256))",
-  "function getPendingOrdersForProvider(address) view returns (uint256[])",
-  "function nextOrderId() view returns (uint256)",
-  "event PurchaseCommitted(uint256 indexed,string indexed,uint256 indexed,uint256,address,uint256)",
-  "event PurchaseFulfilled(uint256 indexed,address indexed,uint256)",
-  "event PurchaseFailed(uint256 indexed,address indexed,string,uint256)",
-  "event PurchaseRefunded(uint256 indexed,string indexed,uint256,uint256)"
-];
-
-// Seeded accounts (from Hardhat)
-const SEEDED_ACCOUNTS = {
-  bankA: { name: "Bank A", address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", privateKey: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" },
-  bankB: { name: "Bank B", address: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8", privateKey: "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d" },
-  regulator: { name: "Regulator", address: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC", privateKey: "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a" },
-  validator1: { name: "Validator 1", address: "0x90F79bf6EB2c4f870365E785982E1f101E93b906", privateKey: "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6" },
-  validator2: { name: "Validator 2", address: "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65", privateKey: "0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a" },
-  provider: { name: "Provider", address: "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc", privateKey: "0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba" },
-  user1: { name: "User 1", address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9", privateKey: "0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e" },
-  user2: { name: "User 2", address: "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955", privateKey: "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356" }
+// Dummy bank accounts - langsung tersedia
+const DUMMY_ACCOUNTS = {
+  '1234567890': { 
+    accountNumber: '1234567890', 
+    accountName: 'Budi Santoso', 
+    balance: 10000000, 
+    bank: 'Bank Mandiri',
+    bankCode: 'BM'
+  },
+  '0987654321': { 
+    accountNumber: '0987654321', 
+    accountName: 'Siti Nurhaliza', 
+    balance: 5000000, 
+    bank: 'Bank Mandiri',
+    bankCode: 'BM'
+  },
+  '1122334455': { 
+    accountNumber: '1122334455', 
+    accountName: 'Rina Wati', 
+    balance: 7500000, 
+    bank: 'Bank Mandiri',
+    bankCode: 'BM'
+  },
+  '2233445566': { 
+    accountNumber: '2233445566', 
+    accountName: 'Dedi Kurniawan', 
+    balance: 12000000, 
+    bank: 'Bank Mandiri',
+    bankCode: 'BM'
+  },
+  '1111111111': { 
+    accountNumber: '1111111111', 
+    accountName: 'Ahmad Yani', 
+    balance: 8000000, 
+    bank: 'Bank BCA',
+    bankCode: 'BCA'
+  },
+  '2222222222': { 
+    accountNumber: '2222222222', 
+    accountName: 'Maya Sari', 
+    balance: 6000000, 
+    bank: 'Bank BCA',
+    bankCode: 'BCA'
+  },
+  '3333333333': { 
+    accountNumber: '3333333333', 
+    accountName: 'Bambang Sutrisno', 
+    balance: 15000000, 
+    bank: 'Bank BCA',
+    bankCode: 'BCA'
+  },
+  '4444444444': { 
+    accountNumber: '4444444444', 
+    accountName: 'Lisa Permata', 
+    balance: 9000000, 
+    bank: 'Bank BCA',
+    bankCode: 'BCA'
+  },
+  '5555555555': { 
+    accountNumber: '5555555555', 
+    accountName: 'Joko Widodo', 
+    balance: 11000000, 
+    bank: 'Bank BRI',
+    bankCode: 'BRI'
+  },
+  '6666666666': { 
+    accountNumber: '6666666666', 
+    accountName: 'Sari Indah', 
+    balance: 7000000, 
+    bank: 'Bank BRI',
+    bankCode: 'BRI'
+  }
 };
 
-// Contract addresses (update after deployment)
-const CONTRACT_ADDRESSES = {
-  IDRToken: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  AccountRegistry: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-  InterbankSettlement: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-  ProductCatalog: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-  PurchaseProcessor: "0xDc64a140Aa3E981100a9becA4E685f962f0cF706"
-};
+// Dummy products
+const DUMMY_PRODUCTS = [
+  { id: 1, name: 'Token Listrik 20kWh', price: 50000, provider: 'PLN', description: 'Token listrik untuk 20kWh' },
+  { id: 2, name: 'Token Listrik 50kWh', price: 125000, provider: 'PLN', description: 'Token listrik untuk 50kWh' },
+  { id: 3, name: 'Pulsa 50.000', price: 50000, provider: 'Telkomsel', description: 'Pulsa seluler 50.000 untuk semua operator' },
+  { id: 4, name: 'Paket Data 10GB', price: 75000, provider: 'Indosat', description: 'Paket data internet 10GB - 30 hari' },
+  { id: 5, name: 'Voucher Game 100k', price: 100000, provider: 'Steam', description: 'Voucher game Steam senilai 100.000' }
+];
 
 function AppPRD() {
-  const [provider, setProvider] = useState(null);
-  const [signer, setSigner] = useState(null);
-  const [currentRole, setCurrentRole] = useState(null);
-  const [accounts, setAccounts] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [pendingTransfers, setPendingTransfers] = useState([]);
-  const [pendingOrders, setPendingOrders] = useState([]);
-  const [events, setEvents] = useState([]);
+  const [accounts, setAccounts] = useState(DUMMY_ACCOUNTS);
+  const [products] = useState(DUMMY_PRODUCTS);
   const [showAboutPage, setShowAboutPage] = useState(false);
-
-  // Form states
+  
+  // Transfer form
   const [transferForm, setTransferForm] = useState({
     fromAccount: '',
     toAccount: '',
     amount: '',
     memo: ''
   });
+  
+  // Purchase form
   const [purchaseForm, setPurchaseForm] = useState({
     buyerAccount: '',
     productId: ''
   });
+  
+  // Loading and flow states
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [currentStep, setCurrentStep] = useState('');
+  const [flowSteps, setFlowSteps] = useState([]);
+  const [smartContractData, setSmartContractData] = useState(null);
+  const [transactionResult, setTransactionResult] = useState(null);
 
+  // Load accounts from localStorage on mount
   useEffect(() => {
-    initProvider();
+    const savedAccounts = localStorage.getItem('banking_accounts');
+    if (savedAccounts) {
+      setAccounts(JSON.parse(savedAccounts));
+    } else {
+      localStorage.setItem('banking_accounts', JSON.stringify(DUMMY_ACCOUNTS));
+    }
   }, []);
 
-  useEffect(() => {
-    if (signer && provider) {
-      loadData();
-      setupEventListeners();
-    }
-  }, [signer, provider]);
-
-  const initProvider = async () => {
-    try {
-      if (typeof window.ethereum !== 'undefined') {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        setProvider(provider);
-        
-        // For demo: use first account or allow role switching
-        const signer = await provider.getSigner();
-        setSigner(signer);
-      } else {
-        // For GitHub Pages demo: show message that local node is required
-        console.warn("MetaMask not found. For full functionality, connect to local Hardhat node.");
-        // Still create a provider for read-only operations
-        const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
-        setProvider(provider);
-      }
-    } catch (error) {
-      console.error("Error initializing provider:", error);
-    }
+  const saveAccounts = (updatedAccounts) => {
+    setAccounts(updatedAccounts);
+    localStorage.setItem('banking_accounts', JSON.stringify(updatedAccounts));
   };
 
-  const switchRole = async (roleKey) => {
-    try {
-      if (!provider) return;
-      
-      const role = SEEDED_ACCOUNTS[roleKey];
-      if (!role) return;
+  const simulateTransferFlow = async (fromAcc, toAcc, amount, isInterbank) => {
+    setIsProcessing(true);
+    setFlowSteps([]);
+    setSmartContractData(null);
+    setTransactionResult(null);
 
-      // For demo: create signer from private key
-      const wallet = new ethers.Wallet(role.privateKey, provider);
-      setSigner(wallet);
-      setCurrentRole(roleKey);
-      
-      console.log(`Switched to role: ${role.name}`);
-    } catch (error) {
-      console.error("Error switching role:", error);
-    }
-  };
-
-  const loadData = async () => {
-    if (!signer || !provider) return;
+    const steps = [];
     
-    try {
-      await loadAccounts();
-      await loadProducts();
-      await loadPendingTransfers();
-      await loadPendingOrders();
-    } catch (error) {
-      console.error("Error loading data:", error);
-    }
-  };
-
-  const loadAccounts = async () => {
-    try {
-      const registry = new ethers.Contract(
-        CONTRACT_ADDRESSES.AccountRegistry,
-        ACCOUNT_REGISTRY_ABI,
-        provider
-      );
-      
-      const accountNumbers = await registry.getAllAccountNumbers();
-      const idrToken = new ethers.Contract(
-        CONTRACT_ADDRESSES.IDRToken,
-        IDR_TOKEN_ABI,
-        provider
-      );
-      
-      const accountData = await Promise.all(
-        accountNumbers.map(async (accNum) => {
-          const account = await registry.getAccount(accNum);
-          const balance = await idrToken.balanceOf(account[1]);
-          return {
-            accountNumber: accNum,
-            ownerAddress: account[1],
-            bankAddress: account[2],
-            bank: account[2].toLowerCase() === SEEDED_ACCOUNTS.bankA.address.toLowerCase() ? 'BankA' : 'BankB',
-            balance: balance.toString()
-          };
-        })
-      );
-      
-      setAccounts(accountData);
-    } catch (error) {
-      console.error("Error loading accounts:", error);
-    }
-  };
-
-  const loadProducts = async () => {
-    try {
-      const catalog = new ethers.Contract(
-        CONTRACT_ADDRESSES.ProductCatalog,
-        PRODUCT_CATALOG_ABI,
-        provider
-      );
-      
-      const productIds = await catalog.getActiveProducts();
-      const productData = await Promise.all(
-        productIds.map(async (id) => {
-          const product = await catalog.getProduct(id);
-          return {
-            id: id.toString(),
-            name: product[1],
-            provider: product[2],
-            price: product[3].toString(),
-            description: product[5]
-          };
-        })
-      );
-      
-      setProducts(productData);
-    } catch (error) {
-      console.error("Error loading products:", error);
-    }
-  };
-
-  const loadPendingTransfers = async () => {
-    try {
-      const settlement = new ethers.Contract(
-        CONTRACT_ADDRESSES.InterbankSettlement,
-        INTERBANK_SETTLEMENT_ABI,
-        provider
-      );
-      
-      const nextId = await settlement.nextRequestId();
-      const transfers = [];
-      
-      for (let i = 0; i < nextId; i++) {
-        try {
-          const request = await settlement.getTransferRequest(i);
-          if (!request[5]) { // not executed
-            transfers.push({
-              id: i,
-              fromAccount: request[0],
-              toAccount: request[1],
-              amount: request[2].toString(),
-              proposerBank: request[3],
-              approvals: request[4].toString(),
-              createdAt: request[6].toString()
-            });
-          }
-        } catch (e) {
-          // Request doesn't exist or was deleted
-        }
-      }
-      
-      setPendingTransfers(transfers);
-    } catch (error) {
-      console.error("Error loading pending transfers:", error);
-    }
-  };
-
-  const loadPendingOrders = async () => {
-    try {
-      const processor = new ethers.Contract(
-        CONTRACT_ADDRESSES.PurchaseProcessor,
-        PURCHASE_PROCESSOR_ABI,
-        provider
-      );
-      
-      if (currentRole === 'provider' && signer) {
-        const orderIds = await processor.getPendingOrdersForProvider(SEEDED_ACCOUNTS.provider.address);
-        const orders = await Promise.all(
-          orderIds.map(async (id) => {
-            const order = await processor.getOrder(id);
-            return {
-              id: id.toString(),
-              buyerAccount: order[1],
-              productId: order[3].toString(),
-              amount: order[4].toString(),
-              status: order[6]
-            };
-          })
-        );
-        setPendingOrders(orders);
-      }
-    } catch (error) {
-      console.error("Error loading pending orders:", error);
-    }
-  };
-
-  const setupEventListeners = () => {
-    if (!provider) return;
-    
-    // Listen to all contract events
-    const contracts = [
-      { address: CONTRACT_ADDRESSES.InterbankSettlement, abi: INTERBANK_SETTLEMENT_ABI, name: 'InterbankSettlement' },
-      { address: CONTRACT_ADDRESSES.PurchaseProcessor, abi: PURCHASE_PROCESSOR_ABI, name: 'PurchaseProcessor' }
-    ];
-    
-    contracts.forEach(({ address, abi, name }) => {
-      const contract = new ethers.Contract(address, abi, provider);
-      
-      // Listen to all events
-      contract.on("*", (event) => {
-        addEvent({
-          contract: name,
-          event: event.eventName,
-          args: event.args,
-          timestamp: new Date().toISOString()
-        });
+    if (isInterbank) {
+      // Interbank transfer flow
+      steps.push({ 
+        step: 1, 
+        title: 'Validasi Rekening', 
+        description: 'Memverifikasi rekening asal dan tujuan',
+        status: 'processing',
+        node: 'Node Bank Asal'
       });
+      await delay(800);
+      setFlowSteps([...steps]);
+      
+      steps[0].status = 'completed';
+      steps.push({ 
+        step: 2, 
+        title: 'Cek Saldo', 
+        description: `Memverifikasi saldo rekening ${fromAcc.accountNumber}`,
+        status: 'processing',
+        node: 'Node Bank Asal'
+      });
+      await delay(600);
+      setFlowSteps([...steps]);
+      
+      steps[1].status = 'completed';
+      steps.push({ 
+        step: 3, 
+        title: 'Propose Transfer', 
+        description: 'Mengirim proposal transfer ke jaringan',
+        status: 'processing',
+        node: 'Interbank Network'
+      });
+      await delay(1000);
+      setFlowSteps([...steps]);
+      
+      steps[2].status = 'completed';
+      steps.push({ 
+        step: 4, 
+        title: 'Validasi Node 1', 
+        description: 'Validator 1 memverifikasi transaksi',
+        status: 'processing',
+        node: 'Validator Node 1'
+      });
+      await delay(1200);
+      setFlowSteps([...steps]);
+      
+      steps[3].status = 'completed';
+      steps.push({ 
+        step: 5, 
+        title: 'Validasi Node 2', 
+        description: 'Validator 2 memverifikasi transaksi',
+        status: 'processing',
+        node: 'Validator Node 2'
+      });
+      await delay(1200);
+      setFlowSteps([...steps]);
+      
+      steps[4].status = 'completed';
+      steps.push({ 
+        step: 6, 
+        title: 'Settlement', 
+        description: 'Menyelesaikan transfer antar bank',
+        status: 'processing',
+        node: 'Settlement Node'
+      });
+      await delay(1000);
+      setFlowSteps([...steps]);
+      
+      steps[5].status = 'completed';
+      steps.push({ 
+        step: 7, 
+        title: 'Update Saldo', 
+        description: 'Memperbarui saldo rekening asal dan tujuan',
+        status: 'processing',
+        node: 'Database Node'
+      });
+      await delay(800);
+      setFlowSteps([...steps]);
+      
+      steps[6].status = 'completed';
+      
+      // Set smart contract data
+      setSmartContractData({
+        contractName: 'InterbankSettlement',
+        function: 'proposeTransfer',
+        parameters: {
+          fromAccount: fromAcc.accountNumber,
+          toAccount: toAcc.accountNumber,
+          amount: `Rp ${parseFloat(amount).toLocaleString('id-ID')}`,
+          proposerBank: fromAcc.bank,
+          validators: ['Validator Node 1', 'Validator Node 2'],
+          approvalThreshold: '2 dari 2',
+          timestamp: new Date().toISOString()
+        },
+        result: {
+          requestId: Math.floor(Math.random() * 10000),
+          status: 'Settled',
+          executionTime: '4.6 detik'
+        }
+      });
+    } else {
+      // Intra-bank transfer flow
+      steps.push({ 
+        step: 1, 
+        title: 'Validasi Rekening', 
+        description: 'Memverifikasi rekening asal dan tujuan',
+        status: 'processing',
+        node: 'Bank Internal Node'
+      });
+      await delay(600);
+      setFlowSteps([...steps]);
+      
+      steps[0].status = 'completed';
+      steps.push({ 
+        step: 2, 
+        title: 'Cek Saldo', 
+        description: `Memverifikasi saldo rekening ${fromAcc.accountNumber}`,
+        status: 'processing',
+        node: 'Bank Internal Node'
+      });
+      await delay(500);
+      setFlowSteps([...steps]);
+      
+      steps[1].status = 'completed';
+      steps.push({ 
+        step: 3, 
+        title: 'Eksekusi Transfer', 
+        description: 'Memproses transfer antar rekening',
+        status: 'processing',
+        node: 'Bank Internal Node'
+      });
+      await delay(800);
+      setFlowSteps([...steps]);
+      
+      steps[2].status = 'completed';
+      steps.push({ 
+        step: 4, 
+        title: 'Update Saldo', 
+        description: 'Memperbarui saldo rekening asal dan tujuan',
+        status: 'processing',
+        node: 'Database Node'
+      });
+      await delay(600);
+      setFlowSteps([...steps]);
+      
+      steps[3].status = 'completed';
+      
+      // Set smart contract data
+      setSmartContractData({
+        contractName: 'BankTransfer',
+        function: 'transferInternal',
+        parameters: {
+          fromAccount: fromAcc.accountNumber,
+          toAccount: toAcc.accountNumber,
+          amount: `Rp ${parseFloat(amount).toLocaleString('id-ID')}`,
+          bank: fromAcc.bank,
+          timestamp: new Date().toISOString()
+        },
+        result: {
+          status: 'Success',
+          executionTime: '2.5 detik'
+        }
+      });
+    }
+    
+    // Update balances
+    const updatedAccounts = { ...accounts };
+    updatedAccounts[fromAcc.accountNumber].balance -= parseFloat(amount);
+    updatedAccounts[toAcc.accountNumber].balance += parseFloat(amount);
+    saveAccounts(updatedAccounts);
+    
+    setTransactionResult({
+      success: true,
+      message: `Transfer berhasil! Rp ${parseFloat(amount).toLocaleString('id-ID')} dari ${fromAcc.accountNumber} ke ${toAcc.accountNumber}`,
+      fromBalance: updatedAccounts[fromAcc.accountNumber].balance,
+      toBalance: updatedAccounts[toAcc.accountNumber].balance
     });
+    
+    setIsProcessing(false);
   };
 
-  const addEvent = (event) => {
-    setEvents(prev => [event, ...prev].slice(0, 50)); // Keep last 50 events
+  const simulatePurchaseFlow = async (buyerAcc, product) => {
+    setIsProcessing(true);
+    setFlowSteps([]);
+    setSmartContractData(null);
+    setTransactionResult(null);
+
+    const steps = [];
+    
+    steps.push({ 
+      step: 1, 
+      title: 'Validasi Rekening', 
+      description: `Memverifikasi rekening ${buyerAcc.accountNumber}`,
+      status: 'processing',
+      node: 'Bank Node'
+    });
+    await delay(600);
+    setFlowSteps([...steps]);
+    
+    steps[0].status = 'completed';
+    steps.push({ 
+      step: 2, 
+      title: 'Cek Saldo', 
+      description: `Memverifikasi saldo untuk pembayaran`,
+      status: 'processing',
+      node: 'Bank Node'
+    });
+    await delay(500);
+    setFlowSteps([...steps]);
+    
+    steps[1].status = 'completed';
+    steps.push({ 
+      step: 3, 
+      title: 'Escrow Funds', 
+      description: 'Mengunci dana pembayaran',
+      status: 'processing',
+      node: 'Escrow Node'
+    });
+    await delay(800);
+    setFlowSteps([...steps]);
+    
+    steps[2].status = 'completed';
+    steps.push({ 
+      step: 4, 
+      title: 'Notifikasi Provider', 
+      description: `Mengirim notifikasi ke ${product.provider}`,
+      status: 'processing',
+      node: 'Provider Node'
+    });
+    await delay(1000);
+    setFlowSteps([...steps]);
+    
+    steps[3].status = 'completed';
+    steps.push({ 
+      step: 5, 
+      title: 'Fulfillment', 
+      description: 'Provider memproses pesanan',
+      status: 'processing',
+      node: 'Provider Node'
+    });
+    await delay(1200);
+    setFlowSteps([...steps]);
+    
+    steps[4].status = 'completed';
+    steps.push({ 
+      step: 6, 
+      title: 'Release Payment', 
+      description: 'Melepaskan pembayaran ke provider',
+      status: 'processing',
+      node: 'Payment Node'
+    });
+    await delay(800);
+    setFlowSteps([...steps]);
+    
+    steps[5].status = 'completed';
+    steps.push({ 
+      step: 7, 
+      title: 'Update Saldo', 
+      description: 'Memperbarui saldo rekening',
+      status: 'processing',
+      node: 'Database Node'
+    });
+    await delay(600);
+    setFlowSteps([...steps]);
+    
+    steps[6].status = 'completed';
+    
+    // Update balance
+    const updatedAccounts = { ...accounts };
+    updatedAccounts[buyerAcc.accountNumber].balance -= product.price;
+    saveAccounts(updatedAccounts);
+    
+    // Set smart contract data
+    setSmartContractData({
+      contractName: 'PurchaseProcessor',
+      function: 'createPurchase',
+      parameters: {
+        buyerAccount: buyerAcc.accountNumber,
+        productId: product.id.toString(),
+        productName: product.name,
+        amount: `Rp ${product.price.toLocaleString('id-ID')}`,
+        provider: product.provider,
+        timestamp: new Date().toISOString()
+      },
+      result: {
+        orderId: Math.floor(Math.random() * 10000),
+        status: 'Fulfilled',
+        executionTime: '5.5 detik'
+      }
+    });
+    
+    setTransactionResult({
+      success: true,
+      message: `Pembelian berhasil! ${product.name} untuk rekening ${buyerAcc.accountNumber}`,
+      remainingBalance: updatedAccounts[buyerAcc.accountNumber].balance
+    });
+    
+    setIsProcessing(false);
   };
 
-  const handleIntraBankTransfer = async () => {
-    if (!signer || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) {
-      alert("Please fill all fields");
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  const handleTransfer = async () => {
+    if (!transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) {
+      alert('Mohon lengkapi semua field');
       return;
     }
 
-    try {
-      const registry = new ethers.Contract(
-        CONTRACT_ADDRESSES.AccountRegistry,
-        ACCOUNT_REGISTRY_ABI,
-        provider
-      );
-      
-      const [fromAddress] = await registry.resolveAccount(transferForm.fromAccount);
-      const [toAddress] = await registry.resolveAccount(transferForm.toAccount);
-      
-      const idrToken = new ethers.Contract(
-        CONTRACT_ADDRESSES.IDRToken,
-        IDR_TOKEN_ABI,
-        signer
-      );
-      
-      // Convert IDR to wei (18 decimals for demo)
-      const amount = ethers.parseUnits(transferForm.amount, 18);
-      await idrToken.transfer(toAddress, amount);
-      
-      alert("Transfer successful!");
-      setTransferForm({ fromAccount: '', toAccount: '', amount: '', memo: '' });
-      loadData();
-    } catch (error) {
-      console.error("Transfer error:", error);
-      alert(`Error: ${error.message}`);
-    }
-  };
+    const fromAcc = accounts[transferForm.fromAccount];
+    const toAcc = accounts[transferForm.toAccount];
+    const amount = parseFloat(transferForm.amount);
 
-  const handleInterbankTransfer = async () => {
-    if (!signer || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) {
-      alert("Please fill all fields");
+    if (isNaN(amount) || amount <= 0) {
+      alert('Jumlah transfer tidak valid');
       return;
     }
 
-    try {
-      const settlement = new ethers.Contract(
-        CONTRACT_ADDRESSES.InterbankSettlement,
-        INTERBANK_SETTLEMENT_ABI,
-        signer
-      );
-      
-      // Convert IDR to wei (18 decimals for demo)
-      const amount = ethers.parseUnits(transferForm.amount, 18);
-      await settlement.proposeTransfer(
-        transferForm.fromAccount,
-        transferForm.toAccount,
-        amount
-      );
-      
-      alert("Transfer proposed! Waiting for validator approvals.");
-      setTransferForm({ fromAccount: '', toAccount: '', amount: '', memo: '' });
-      loadData();
-    } catch (error) {
-      console.error("Propose transfer error:", error);
-      alert(`Error: ${error.message}`);
-    }
-  };
-
-  const handleApproveTransfer = async (requestId) => {
-    if (!signer) {
-      alert("Please select a validator role");
+    if (fromAcc.balance < amount) {
+      alert('Saldo tidak mencukupi');
       return;
     }
 
-    try {
-      const settlement = new ethers.Contract(
-        CONTRACT_ADDRESSES.InterbankSettlement,
-        INTERBANK_SETTLEMENT_ABI,
-        signer
-      );
-      
-      await settlement.approveTransfer(requestId);
-      alert("Transfer approved!");
-      loadData();
-    } catch (error) {
-      console.error("Approve error:", error);
-      alert(`Error: ${error.message}`);
+    if (fromAcc.accountNumber === toAcc.accountNumber) {
+      alert('Rekening asal dan tujuan tidak boleh sama');
+      return;
     }
+
+    const isInterbank = fromAcc.bankCode !== toAcc.bankCode;
+    await simulateTransferFlow(fromAcc, toAcc, amount, isInterbank);
+    
+    // Reset form
+    setTransferForm({ fromAccount: '', toAccount: '', amount: '', memo: '' });
   };
 
   const handlePurchase = async () => {
-    if (!signer || !purchaseForm.buyerAccount || !purchaseForm.productId) {
-      alert("Please fill all fields");
+    if (!purchaseForm.buyerAccount || !purchaseForm.productId) {
+      alert('Mohon pilih rekening dan produk');
       return;
     }
 
-    try {
-      const processor = new ethers.Contract(
-        CONTRACT_ADDRESSES.PurchaseProcessor,
-        PURCHASE_PROCESSOR_ABI,
-        signer
-      );
-      
-      await processor.createPurchase(
-        purchaseForm.buyerAccount,
-        purchaseForm.productId
-      );
-      
-      alert("Purchase created! Waiting for provider fulfillment.");
-      setPurchaseForm({ buyerAccount: '', productId: '' });
-      loadData();
-    } catch (error) {
-      console.error("Purchase error:", error);
-      alert(`Error: ${error.message}`);
-    }
-  };
+    const buyerAcc = accounts[purchaseForm.buyerAccount];
+    const product = products.find(p => p.id === parseInt(purchaseForm.productId));
 
-  const handleFulfillOrder = async (orderId) => {
-    if (!signer) {
-      alert("Please select provider role");
+    if (buyerAcc.balance < product.price) {
+      alert('Saldo tidak mencukupi');
       return;
     }
 
-    try {
-      const processor = new ethers.Contract(
-        CONTRACT_ADDRESSES.PurchaseProcessor,
-        PURCHASE_PROCESSOR_ABI,
-        signer
-      );
-      
-      await processor.markFulfilled(orderId);
-      alert("Order fulfilled!");
-      loadData();
-    } catch (error) {
-      console.error("Fulfill error:", error);
-      alert(`Error: ${error.message}`);
-    }
-  };
-
-  const handleFailOrder = async (orderId) => {
-    if (!signer) {
-      alert("Please select provider role");
-      return;
-    }
-
-    try {
-      const processor = new ethers.Contract(
-        CONTRACT_ADDRESSES.PurchaseProcessor,
-        PURCHASE_PROCESSOR_ABI,
-        signer
-      );
-      
-      await processor.markFailed(orderId, "Provider cancelled");
-      alert("Order marked as failed!");
-      loadData();
-    } catch (error) {
-      console.error("Fail order error:", error);
-      alert(`Error: ${error.message}`);
-    }
+    await simulatePurchaseFlow(buyerAcc, product);
+    
+    // Reset form
+    setPurchaseForm({ buyerAccount: '', productId: '' });
   };
 
   if (showAboutPage) {
     return <AboutPage onBack={() => setShowAboutPage(false)} />;
   }
 
+  const accountList = Object.values(accounts);
+
   return (
     <div className="container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ margin: 0 }}>Contract-Based Payment System (PRD Demo)</h1>
+        <h1 style={{ margin: 0 }}>Sistem Perbankan dengan Smart Contract</h1>
         <button 
           onClick={() => setShowAboutPage(true)}
           style={{ background: '#28a745', width: 'auto', padding: '10px 20px' }}
@@ -486,83 +506,52 @@ function AppPRD() {
         </button>
       </div>
 
-      <div className="card" style={{ background: '#fff3cd', border: '2px solid #ffc107', marginBottom: '20px' }}>
-        <p style={{ margin: 0, color: '#856404' }}>
-          <strong>Demo Mode:</strong> This is a local demo simulation. No real fiat movement. 
-          Switch roles using the selector below to act as different parties.
-        </p>
-        <p style={{ margin: '10px 0 0 0', color: '#856404' }}>
-          <strong>Note:</strong> Untuk full functionality, jalankan Hardhat local node (npm run node) dan connect ke http://127.0.0.1:8545.
-          Lihat README_PRD.md untuk instruksi lengkap.
+      <div className="card" style={{ background: '#e7f3ff', border: '2px solid #2196F3', marginBottom: '20px' }}>
+        <p style={{ margin: 0, color: '#1565C0' }}>
+          <strong>Demo Mode:</strong> Sistem ini menggunakan smart contract untuk memproses semua transaksi. 
+          Setiap transaksi divalidasi oleh multiple nodes untuk keamanan dan transparansi.
         </p>
       </div>
 
-      {/* Role Selector */}
-      <div className="card">
-        <h2>Role Selector</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
-          {Object.entries(SEEDED_ACCOUNTS).map(([key, role]) => (
-            <button
-              key={key}
-              onClick={() => switchRole(key)}
-              style={{
-                background: currentRole === key ? '#667eea' : '#ccc',
-                color: 'white',
-                padding: '10px',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              {role.name}
-            </button>
-          ))}
-        </div>
-        {currentRole && (
-          <p style={{ marginTop: '15px' }}>
-            <strong>Current Role:</strong> {SEEDED_ACCOUNTS[currentRole].name} 
-            ({SEEDED_ACCOUNTS[currentRole].address.slice(0, 10)}...)
-          </p>
-        )}
-      </div>
-
-      {/* Simple Transfer Panel */}
+      {/* Transfer Panel */}
       <div className="card">
         <h2>Transfer</h2>
         <div className="form-group">
-          <label>From Account</label>
+          <label>Rekening Asal</label>
           <select
             value={transferForm.fromAccount}
             onChange={(e) => setTransferForm({ ...transferForm, fromAccount: e.target.value })}
+            disabled={isProcessing}
             style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px' }}
           >
-            <option value="">-- Select From Account --</option>
-            {accounts.map(acc => (
+            <option value="">-- Pilih Rekening Asal --</option>
+            {accountList.map(acc => (
               <option key={acc.accountNumber} value={acc.accountNumber}>
-                {acc.accountNumber} ({acc.bank}) - Saldo: Rp {acc.balance ? (parseFloat(acc.balance) / 1e18).toLocaleString('id-ID') : '0'}
+                {acc.accountNumber} - {acc.accountName} ({acc.bank}) - Saldo: Rp {acc.balance.toLocaleString('id-ID')}
               </option>
             ))}
           </select>
         </div>
         <div className="form-group">
-          <label>To Account</label>
+          <label>Rekening Tujuan</label>
           <select
             value={transferForm.toAccount}
             onChange={(e) => setTransferForm({ ...transferForm, toAccount: e.target.value })}
+            disabled={isProcessing}
             style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px' }}
           >
-            <option value="">-- Select To Account --</option>
-            {accounts
+            <option value="">-- Pilih Rekening Tujuan --</option>
+            {accountList
               .filter(acc => acc.accountNumber !== transferForm.fromAccount)
               .map(acc => (
                 <option key={acc.accountNumber} value={acc.accountNumber}>
-                  {acc.accountNumber} ({acc.bank})
+                  {acc.accountNumber} - {acc.accountName} ({acc.bank}) - Saldo: Rp {acc.balance.toLocaleString('id-ID')}
                 </option>
               ))}
           </select>
         </div>
         <div className="form-group">
-          <label>Amount (IDR)</label>
+          <label>Jumlah (IDR)</label>
           <input
             type="number"
             value={transferForm.amount}
@@ -570,165 +559,215 @@ function AppPRD() {
             placeholder="0"
             step="1000"
             min="0"
+            disabled={isProcessing}
             style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px' }}
           />
         </div>
         <div className="form-group">
-          <label>Memo (Optional)</label>
+          <label>Catatan (Opsional)</label>
           <input
             type="text"
             value={transferForm.memo}
             onChange={(e) => setTransferForm({ ...transferForm, memo: e.target.value })}
-            placeholder="Transfer description"
+            placeholder="Catatan transfer"
+            disabled={isProcessing}
             style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px' }}
           />
         </div>
         <button 
-          onClick={async () => {
-            const fromAcc = accounts.find(a => a.accountNumber === transferForm.fromAccount);
-            const toAcc = accounts.find(a => a.accountNumber === transferForm.toAccount);
-            
-            if (fromAcc && toAcc && fromAcc.bank === toAcc.bank) {
-              await handleIntraBankTransfer();
-            } else {
-              await handleInterbankTransfer();
-            }
-          }}
+          onClick={handleTransfer}
+          disabled={isProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount}
+          style={{ opacity: (isProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) ? 0.6 : 1 }}
         >
-          Submit Transfer
+          {isProcessing ? 'Memproses...' : 'Kirim Transfer'}
         </button>
       </div>
 
       {/* Product Purchase Panel */}
       <div className="card">
-        <h2>Product Purchase</h2>
+        <h2>Pembelian Produk</h2>
         <div className="form-group">
-          <label>Buyer Account</label>
+          <label>Rekening Pembeli</label>
           <select
             value={purchaseForm.buyerAccount}
             onChange={(e) => setPurchaseForm({ ...purchaseForm, buyerAccount: e.target.value })}
+            disabled={isProcessing}
             style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px' }}
           >
-            <option value="">-- Select Buyer Account --</option>
-            {accounts.map(acc => (
+            <option value="">-- Pilih Rekening --</option>
+            {accountList.map(acc => (
               <option key={acc.accountNumber} value={acc.accountNumber}>
-                {acc.accountNumber} ({acc.bank}) - Saldo: Rp {acc.balance ? (parseFloat(acc.balance) / 1e18).toLocaleString('id-ID') : '0'}
+                {acc.accountNumber} - {acc.accountName} ({acc.bank}) - Saldo: Rp {acc.balance.toLocaleString('id-ID')}
               </option>
             ))}
           </select>
         </div>
         <div className="form-group">
-          <label>Product</label>
+          <label>Produk</label>
           <select
             value={purchaseForm.productId}
             onChange={(e) => setPurchaseForm({ ...purchaseForm, productId: e.target.value })}
+            disabled={isProcessing}
             style={{ width: '100%', padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px' }}
           >
-            <option value="">-- Select Product --</option>
+            <option value="">-- Pilih Produk --</option>
             {products.map(product => (
               <option key={product.id} value={product.id}>
-                {product.name} - Rp {(parseFloat(product.price) / 1e18).toLocaleString('id-ID')}
+                {product.name} - Rp {product.price.toLocaleString('id-ID')} ({product.provider})
               </option>
             ))}
           </select>
         </div>
-        <button onClick={handlePurchase}>Buy Product</button>
+        <button 
+          onClick={handlePurchase}
+          disabled={isProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId}
+          style={{ opacity: (isProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId) ? 0.6 : 1 }}
+        >
+          {isProcessing ? 'Memproses...' : 'Beli Sekarang'}
+        </button>
       </div>
 
-      {/* Validator Panel */}
-      {(currentRole === 'validator1' || currentRole === 'validator2') && (
-        <div className="card">
-          <h2>Validator Panel - Pending Transfers</h2>
-          {pendingTransfers.length === 0 ? (
-            <p>No pending transfers</p>
-          ) : (
-            <div>
-              {pendingTransfers.map(transfer => (
-                <div key={transfer.id} style={{ 
-                  padding: '15px', 
-                  margin: '10px 0', 
-                  background: '#f8f9fa', 
+      {/* Processing Flow Visualization */}
+      {isProcessing && (
+        <div className="card" style={{ background: '#f8f9fa', border: '2px solid #667eea' }}>
+          <h2 style={{ color: '#667eea' }}>Memproses Transaksi...</h2>
+          <div style={{ marginTop: '20px' }}>
+            {flowSteps.map((step, idx) => (
+              <div 
+                key={idx} 
+                style={{ 
+                  marginBottom: '15px',
+                  padding: '15px',
+                  background: step.status === 'completed' ? '#d4edda' : step.status === 'processing' ? '#fff3cd' : '#f8f9fa',
+                  border: `2px solid ${step.status === 'completed' ? '#28a745' : step.status === 'processing' ? '#ffc107' : '#e0e0e0'}`,
                   borderRadius: '8px',
-                  border: '1px solid #e0e0e0'
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '15px'
+                }}
+              >
+                <div style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  borderRadius: '50%', 
+                  background: step.status === 'completed' ? '#28a745' : step.status === 'processing' ? '#ffc107' : '#e0e0e0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  flexShrink: 0
                 }}>
-                  <p><strong>Request ID:</strong> {transfer.id}</p>
-                  <p><strong>From:</strong> {transfer.fromAccount}</p>
-                  <p><strong>To:</strong> {transfer.toAccount}</p>
-                  <p><strong>Amount:</strong> Rp {(parseFloat(transfer.amount) / 1e18).toLocaleString('id-ID')}</p>
-                  <p><strong>Approvals:</strong> {transfer.approvals} / 2</p>
-                  <button 
-                    onClick={() => handleApproveTransfer(transfer.id)}
-                    style={{ marginTop: '10px', marginRight: '10px' }}
-                  >
-                    Approve
-                  </button>
+                  {step.status === 'completed' ? '✓' : step.step}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Provider Panel */}
-      {currentRole === 'provider' && (
-        <div className="card">
-          <h2>Provider Panel - Pending Orders</h2>
-          {pendingOrders.length === 0 ? (
-            <p>No pending orders</p>
-          ) : (
-            <div>
-              {pendingOrders.map(order => (
-                <div key={order.id} style={{ 
-                  padding: '15px', 
-                  margin: '10px 0', 
-                  background: '#f8f9fa', 
-                  borderRadius: '8px',
-                  border: '1px solid #e0e0e0'
-                }}>
-                  <p><strong>Order ID:</strong> {order.id}</p>
-                  <p><strong>Buyer:</strong> {order.buyerAccount}</p>
-                  <p><strong>Product ID:</strong> {order.productId}</p>
-                  <p><strong>Amount:</strong> Rp {(parseFloat(order.amount) / 1e18).toLocaleString('id-ID')}</p>
-                  <button 
-                    onClick={() => handleFulfillOrder(order.id)}
-                    style={{ marginTop: '10px', marginRight: '10px', background: '#28a745' }}
-                  >
-                    Fulfill
-                  </button>
-                  <button 
-                    onClick={() => handleFailOrder(order.id)}
-                    style={{ marginTop: '10px', background: '#dc3545' }}
-                  >
-                    Fail
-                  </button>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ margin: 0, fontSize: '16px' }}>{step.title}</h3>
+                    <span style={{ 
+                      fontSize: '12px', 
+                      color: '#666',
+                      background: '#e0e0e0',
+                      padding: '4px 8px',
+                      borderRadius: '4px'
+                    }}>
+                      {step.node}
+                    </span>
+                  </div>
+                  <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '14px' }}>{step.description}</p>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Audit Feed */}
-      <div className="card">
-        <h2>Audit Feed (Events)</h2>
-        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-          {events.length === 0 ? (
-            <p>No events yet</p>
-          ) : (
-            events.map((event, idx) => (
-              <div key={idx} style={{ 
-                padding: '10px', 
-                margin: '5px 0', 
-                background: '#f8f9fa', 
-                borderRadius: '4px',
-                fontSize: '0.9em'
-              }}>
-                <strong>{event.contract}:</strong> {event.event}
-                <br />
-                <small style={{ color: '#666' }}>{event.timestamp}</small>
               </div>
-            ))
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Smart Contract Data */}
+      {smartContractData && !isProcessing && (
+        <div className="card" style={{ background: '#e7f3ff', border: '2px solid #2196F3' }}>
+          <h2 style={{ color: '#1976D2' }}>Data Smart Contract</h2>
+          <div style={{ marginTop: '15px' }}>
+            <div style={{ marginBottom: '15px' }}>
+              <strong>Contract:</strong> {smartContractData.contractName}
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <strong>Function:</strong> {smartContractData.function}
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <strong>Parameters:</strong>
+              <div style={{ marginLeft: '20px', marginTop: '10px', background: 'white', padding: '15px', borderRadius: '8px' }}>
+                {Object.entries(smartContractData.parameters).map(([key, value]) => (
+                  <div key={key} style={{ marginBottom: '8px' }}>
+                    <strong>{key}:</strong> {value}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <strong>Result:</strong>
+              <div style={{ marginLeft: '20px', marginTop: '10px', background: 'white', padding: '15px', borderRadius: '8px' }}>
+                {Object.entries(smartContractData.result).map(([key, value]) => (
+                  <div key={key} style={{ marginBottom: '8px' }}>
+                    <strong>{key}:</strong> {value}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transaction Result */}
+      {transactionResult && !isProcessing && (
+        <div className="card" style={{ 
+          background: transactionResult.success ? '#d4edda' : '#f8d7da', 
+          border: `2px solid ${transactionResult.success ? '#28a745' : '#dc3545'}` 
+        }}>
+          <h2 style={{ color: transactionResult.success ? '#155724' : '#721c24' }}>
+            {transactionResult.success ? '✓ Transaksi Berhasil' : '✗ Transaksi Gagal'}
+          </h2>
+          <p style={{ margin: '10px 0', color: transactionResult.success ? '#155724' : '#721c24' }}>
+            {transactionResult.message}
+          </p>
+          {transactionResult.fromBalance !== undefined && (
+            <p style={{ margin: '5px 0', color: transactionResult.success ? '#155724' : '#721c24' }}>
+              Saldo rekening asal: Rp {transactionResult.fromBalance.toLocaleString('id-ID')}
+            </p>
           )}
+          {transactionResult.toBalance !== undefined && (
+            <p style={{ margin: '5px 0', color: transactionResult.success ? '#155724' : '#721c24' }}>
+              Saldo rekening tujuan: Rp {transactionResult.toBalance.toLocaleString('id-ID')}
+            </p>
+          )}
+          {transactionResult.remainingBalance !== undefined && (
+            <p style={{ margin: '5px 0', color: transactionResult.success ? '#155724' : '#721c24' }}>
+              Saldo tersisa: Rp {transactionResult.remainingBalance.toLocaleString('id-ID')}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Account List */}
+      <div className="card">
+        <h2>Daftar Rekening</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '15px', marginTop: '15px' }}>
+          {accountList.map(acc => (
+            <div 
+              key={acc.accountNumber} 
+              style={{ 
+                padding: '15px', 
+                background: '#f8f9fa', 
+                borderRadius: '8px',
+                border: '1px solid #e0e0e0'
+              }}
+            >
+              <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{acc.accountName}</div>
+              <div style={{ color: '#666', fontSize: '14px' }}>No. Rekening: {acc.accountNumber}</div>
+              <div style={{ color: '#666', fontSize: '14px' }}>Bank: {acc.bank}</div>
+              <div style={{ color: '#28a745', fontWeight: 'bold', marginTop: '10px' }}>
+                Saldo: Rp {acc.balance.toLocaleString('id-ID')}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -736,4 +775,3 @@ function AppPRD() {
 }
 
 export default AppPRD;
-

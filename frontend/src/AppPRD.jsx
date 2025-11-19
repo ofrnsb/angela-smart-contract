@@ -1026,21 +1026,22 @@ function AppPRD() {
                   color: 'white',
                   border: 'none',
                   borderRadius: '50%',
-                  width: '32px',
-                  height: '32px',
-                  minWidth: '32px',
-                  minHeight: '32px',
+                  width: '36px',
+                  height: '36px',
+                  minWidth: '36px',
+                  minHeight: '36px',
                   padding: 0,
                   margin: 0,
                   cursor: 'pointer',
-                  fontSize: '24px',
+                  fontSize: '22px',
                   lineHeight: '1',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   transition: 'all 0.2s',
                   boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
-                  fontWeight: '300'
+                  fontWeight: '300',
+                  flexShrink: 0
                 }}
                 onMouseOver={(e) => {
                   e.target.style.background = '#dc2626';

@@ -202,9 +202,14 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
           alignItems: 'center',
           gap: '12px',
           marginBottom: '20px',
+          flexWrap: 'nowrap',
         }}
       >
-        <button className='back-button' onClick={onBack}>
+        <button
+          className='back-button'
+          onClick={onBack}
+          style={{ marginBottom: 0 }}
+        >
           {t.back}
         </button>
         <button

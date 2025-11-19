@@ -1,7 +1,71 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ethers } from 'ethers';
 import './index.css';
 import AboutPage from './components/AboutPage';
+import HistoryPanel from './components/HistoryPanel';
+
+function InfoIcon({ text }) {
+  const [open, setOpen] = useState(false);
+  const toggle = () => setOpen((v) => !v);
+  return (
+    <span
+      role='button'
+      tabIndex={0}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onClick={toggle}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle();
+        }
+      }}
+      onTouchStart={() => setOpen(true)}
+      onTouchEnd={() => setOpen(false)}
+      aria-label={text}
+      style={{
+        position: 'relative',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 18,
+        height: 18,
+        borderRadius: '50%',
+        background: '#e5e7eb',
+        color: '#374151',
+        fontSize: 12,
+        fontWeight: 700,
+        cursor: 'help',
+        userSelect: 'none',
+        outline: 'none',
+      }}
+    >
+      i
+      {open && (
+        <span
+          style={{
+            position: 'absolute',
+            top: '140%',
+            left: 0,
+            zIndex: 3000,
+            background: '#111827',
+            color: 'white',
+            padding: '8px 10px',
+            borderRadius: 8,
+            fontSize: 12,
+            lineHeight: 1.4,
+            whiteSpace: 'normal',
+            width: 280,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+            pointerEvents: 'none',
+          }}
+        >
+          {text}
+        </span>
+      )}
+    </span>
+  );
+}
 
 // Language translations
 const translations = {
@@ -37,6 +101,26 @@ const translations = {
     close: 'Tutup',
     viewProcess: 'Lihat Proses',
     viewResult: 'Lihat Hasil',
+    simulationControlTitle: 'Kontrol Simulasi',
+    processSpeed: 'Kecepatan Proses',
+    validatorThreshold: 'Threshold Validator',
+    totalNodesHint: 'Total node: 3 (Asal, Tujuan, Regulator)',
+    simulateFailToBank: 'Kegagalan validasi bank tujuan',
+    simulationExtras: 'Simulasi Tambahan',
+    copy: 'Salin',
+    simulateFailRegulator: 'Kegagalan validasi regulator',
+    simulateDispute: 'Dispute & Reversal setelah settle',
+    reversedDueToDispute: 'Transaksi dibatalkan (reversal) karena dispute',
+    tooltipProcessSpeed:
+      'Mengatur kecepatan simulasi (nilai lebih besar = lebih lambat).',
+    tooltipValidatorThreshold:
+      'Jumlah persetujuan validator yang dibutuhkan sebelum eksekusi kontrak.',
+    tooltipFailToBank:
+      'Paksa validasi bank tujuan gagal untuk menguji skenario gagal konsensus.',
+    tooltipFailRegulator:
+      'Paksa validasi regulator gagal untuk menguji skenario gagal konsensus.',
+    tooltipDisputeReversal:
+      'Setelah settle, simulasi adanya dispute dan reversal saldo.',
     selectAccount: 'Mohon lengkapi semua field',
     invalidAmount: 'Jumlah transfer tidak valid',
     insufficientBalance: 'Saldo tidak mencukupi',
@@ -77,6 +161,25 @@ const translations = {
     close: 'Close',
     viewProcess: 'View Process',
     viewResult: 'View Result',
+    simulationControlTitle: 'Simulation Controls',
+    processSpeed: 'Process Speed',
+    validatorThreshold: 'Validator Threshold',
+    totalNodesHint: 'Total nodes: 3 (Source, Destination, Regulator)',
+    simulateFailToBank: 'Simulate destination bank validation failure',
+    simulationExtras: 'Extra Simulation',
+    copy: 'Copy',
+    simulateFailRegulator: 'Simulate regulator validation failure',
+    simulateDispute: 'Simulate Dispute & Reversal after settlement',
+    reversedDueToDispute: 'Transaction reversed due to dispute',
+    tooltipProcessSpeed: 'Adjust simulation speed (higher value = slower).',
+    tooltipValidatorThreshold:
+      'Number of validator approvals required before executing the contract.',
+    tooltipFailToBank:
+      'Force destination bank validation to fail to test consensus failure.',
+    tooltipFailRegulator:
+      'Force regulator validation to fail to test consensus failure.',
+    tooltipDisputeReversal:
+      'After settlement, simulate a dispute and balance reversal.',
     selectAccount: 'Please fill all fields',
     invalidAmount: 'Invalid transfer amount',
     insufficientBalance: 'Insufficient balance',
@@ -147,7 +250,7 @@ const DUMMY_ACCOUNTS = {
   },
   5555555555: {
     accountNumber: '5555555555',
-    accountName: 'Joko Widodo',
+    accountName: 'Gilang Saputra',
     balance: 11000000,
     bank: 'Bank BRI',
     bankCode: 'BRI',
@@ -158,6 +261,83 @@ const DUMMY_ACCOUNTS = {
     balance: 7000000,
     bank: 'Bank BRI',
     bankCode: 'BRI',
+  },
+  7777777777: {
+    accountNumber: '7777777777',
+    accountName: 'Andi Pratama',
+    balance: 9500000,
+    bank: 'Bank BNI',
+    bankCode: 'BNI',
+  },
+  8888888888: {
+    accountNumber: '8888888888',
+    accountName: 'Nadia Lestari',
+    balance: 4200000,
+    bank: 'Bank BNI',
+    bankCode: 'BNI',
+  },
+  9999999999: {
+    accountNumber: '9999999999',
+    accountName: 'Yusuf Hamzah',
+    balance: 3000000,
+    bank: 'Bank BSI',
+    bankCode: 'BSI',
+  },
+  1010101010: {
+    accountNumber: '1010101010',
+    accountName: 'Siti Aisyah',
+    balance: 8600000,
+    bank: 'Bank BSI',
+    bankCode: 'BSI',
+  },
+  1212121212: {
+    accountNumber: '1212121212',
+    accountName: 'Rudi Hartono',
+    balance: 13400000,
+    bank: 'Bank Permata',
+    bankCode: 'PMT',
+  },
+  1313131313: {
+    accountNumber: '1313131313',
+    accountName: 'Ari Wibowo',
+    balance: 2700000,
+    bank: 'Bank Danamon',
+    bankCode: 'DNMN',
+  },
+  1414141414: {
+    accountNumber: '1414141414',
+    accountName: 'Dewi Lestari',
+    balance: 15800000,
+    bank: 'CIMB Niaga',
+    bankCode: 'CIMB',
+  },
+  1515151515: {
+    accountNumber: '1515151515',
+    accountName: 'Fajar Maulana',
+    balance: 2200000,
+    bank: 'Bank BTN',
+    bankCode: 'BTN',
+  },
+  1616161616: {
+    accountNumber: '1616161616',
+    accountName: 'Kevin Pratama',
+    balance: 12500000,
+    bank: 'OCBC NISP',
+    bankCode: 'OCBC',
+  },
+  1717171717: {
+    accountNumber: '1717171717',
+    accountName: 'Nurul Huda',
+    balance: 5200000,
+    bank: 'Bank Panin',
+    bankCode: 'PANIN',
+  },
+  1818181818: {
+    accountNumber: '1818181818',
+    accountName: 'Taufik Rahman',
+    balance: 9100000,
+    bank: 'Maybank Indonesia',
+    bankCode: 'MYBK',
   },
 };
 
@@ -231,6 +411,16 @@ function AppPRD() {
   const [transactionResult, setTransactionResult] = useState(null);
   const [showFlowModal, setShowFlowModal] = useState(false);
   const [showContractModal, setShowContractModal] = useState(false);
+  // Strong simulation controls
+  const [speedFactor, setSpeedFactor] = useState(1.0); // 1.0 = normal, >1 lebih lambat
+  const [validatorConfig, setValidatorConfig] = useState({
+    total: 3,
+    required: 3,
+    failToBank: false,
+    failRegulator: false,
+    dispute: false,
+  });
+  const [ledgerTick, setLedgerTick] = useState(0);
 
   // Load accounts from localStorage on mount
   useEffect(() => {
@@ -247,6 +437,52 @@ function AppPRD() {
     localStorage.setItem('banking_accounts', JSON.stringify(updatedAccounts));
   };
 
+  // Privacy mask helper
+  const maskAccount = (acc) => {
+    const s = String(acc || '');
+    if (s.length <= 4) return s;
+    return s.slice(0, -4).replace(/\d/g, 'x') + s.slice(-4);
+  };
+
+  // Currency input helpers (live thousand separator formatting)
+  const unformatToDigits = (s) => String(s || '').replace(/\D/g, '');
+  const formatCurrencyInput = (digits, lang) => {
+    const ds = unformatToDigits(digits);
+    if (!ds) return '';
+    const n = parseInt(ds, 10);
+    return n.toLocaleString(lang === 'id' ? 'id-ID' : 'en-US');
+  };
+
+  // Fee & limit (simulation)
+  const DAILY_LIMIT = 10000000; // Rp 10.000.000 per hari
+  const FEE_INTER = 2500; // Interbank fee simulasi
+  const FEE_INTRA = 0; // Intra-bank fee simulasi
+
+  // Daily usage helpers
+  const USAGE_KEY = 'banking_daily_usage';
+  const todayKey = () => new Date().toISOString().slice(0, 10);
+  const getDailyUsage = (accountNumber) => {
+    try {
+      const raw = localStorage.getItem(USAGE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      const byAcc = obj[accountNumber] || {};
+      return parseFloat(byAcc[todayKey()] || 0);
+    } catch {
+      return 0;
+    }
+  };
+  const addDailyUsage = (accountNumber, delta) => {
+    try {
+      const raw = localStorage.getItem(USAGE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      const key = todayKey();
+      obj[accountNumber] = obj[accountNumber] || {};
+      obj[accountNumber][key] =
+        parseFloat(obj[accountNumber][key] || 0) + parseFloat(delta || 0);
+      localStorage.setItem(USAGE_KEY, JSON.stringify(obj));
+    } catch {}
+  };
+
   const simulateTransferFlow = async (fromAcc, toAcc, amount, isInterbank) => {
     setIsTransferProcessing(true);
     setFlowSteps([]);
@@ -261,6 +497,8 @@ function AppPRD() {
 
     if (isInterbank) {
       // Interbank transfer flow
+      let approvals = 0;
+      let feeApplied = FEE_INTER;
       steps.push({
         step: 1,
         title: 'Validasi Rekening',
@@ -269,7 +507,7 @@ function AppPRD() {
         node: `Node ${fromAcc.bank}`,
         details: [
           'Cek format nomor rekening dan keberadaan rekening.',
-          'Pastikan rekening tidak diblokir atau dibekukan.'
+          'Pastikan rekening tidak diblokir atau dibekukan.',
         ],
       });
       await delay(1500);
@@ -279,16 +517,76 @@ function AppPRD() {
       steps.push({
         step: 2,
         title: 'Cek Saldo',
-        description: `${fromAcc.bank} memverifikasi saldo rekening ${fromAcc.accountNumber}`,
+        description: `${
+          fromAcc.bank
+        } memverifikasi saldo rekening ${maskAccount(fromAcc.accountNumber)}`,
         status: 'processing',
         node: `Node ${fromAcc.bank}`,
         details: [
           'Hitung saldo tersedia vs. saldo tertahan (hold).',
-          'Validasi limit transfer harian dan fee (bila ada).'
+          'Validasi limit transfer harian dan fee (bila ada).',
         ],
       });
       await delay(1200);
       setFlowSteps([...steps]);
+      // Check fee & daily limit
+      const usedToday = getDailyUsage(fromAcc.accountNumber);
+      if (
+        fromAcc.balance < amount + feeApplied ||
+        usedToday + amount > DAILY_LIMIT
+      ) {
+        steps[1].status = 'failed';
+        steps.push({
+          step: 2.5,
+          title:
+            language === 'id'
+              ? 'Batas/Saldo Tidak Cukup'
+              : 'Limit/Insufficient Balance',
+          description:
+            usedToday + amount > DAILY_LIMIT
+              ? language === 'id'
+                ? `Melebihi limit harian Rp ${DAILY_LIMIT.toLocaleString(
+                    'id-ID'
+                  )}`
+                : `Exceeds daily limit Rp ${DAILY_LIMIT.toLocaleString(
+                    'id-ID'
+                  )}`
+              : language === 'id'
+              ? `Saldo tidak mencukupi untuk jumlah + fee Rp ${feeApplied.toLocaleString(
+                  'id-ID'
+                )}`
+              : `Insufficient balance for amount + fee Rp ${feeApplied.toLocaleString(
+                  'id-ID'
+                )}`,
+          status: 'failed',
+          node: `Node ${fromAcc.bank}`,
+        });
+        await delay(800);
+        setFlowSteps([...steps]);
+        setIsTransferProcessing(false);
+        setTransactionResult({
+          success: false,
+          message:
+            language === 'id'
+              ? 'Transaksi ditolak: saldo/limit harian tidak mencukupi'
+              : 'Transaction declined: insufficient balance/daily limit',
+        });
+        appendLedgerEntry({
+          type: 'transfer',
+          interbank: true,
+          fromAccount: fromAcc.accountNumber,
+          toAccount: toAcc.accountNumber,
+          bankFrom: fromAcc.bank,
+          bankTo: toAcc.bank,
+          amount,
+          fee: feeApplied,
+          status: 'Rejected',
+          reason: 'Insufficient/Limit',
+          steps: [...steps],
+          createdAt: new Date().toISOString(),
+        });
+        return;
+      }
 
       steps[1].status = 'completed';
       steps.push({
@@ -299,7 +597,7 @@ function AppPRD() {
         node: 'Interbank Network',
         details: [
           'Bank pengirim menyiarkan payload (rek. asal/tujuan, jumlah, timestamp).',
-          'Jaringan menerima proposal untuk divalidasi oleh para node validator.'
+          'Jaringan menerima proposal untuk divalidasi oleh para node validator.',
         ],
       });
       await delay(2000);
@@ -314,13 +612,14 @@ function AppPRD() {
         node: `Node ${fromAcc.bank}`,
         details: [
           'Node bank asal mengecek keabsahan payload.',
-          'Memberikan tanda tangan persetujuan (signature).'
+          'Memberikan tanda tangan persetujuan (signature).',
         ],
       });
       await delay(1800);
       setFlowSteps([...steps]);
 
       steps[3].status = 'completed';
+      approvals += 1;
       steps.push({
         step: 5,
         title: `Validasi ${toAcc.bank}`,
@@ -329,13 +628,19 @@ function AppPRD() {
         node: `Node ${toAcc.bank}`,
         details: [
           'Node bank tujuan mengecek keabsahan payload.',
-          'Memberikan tanda tangan persetujuan (signature).'
+          'Memberikan tanda tangan persetujuan (signature).',
         ],
       });
       await delay(1800);
+      // Simulasi kegagalan validator tujuan
+      if (validatorConfig.failToBank) {
+        steps[4].status = 'failed';
+      } else {
+        steps[4].status = 'completed';
+        approvals += 1;
+      }
       setFlowSteps([...steps]);
 
-      steps[4].status = 'completed';
       steps.push({
         step: 6,
         title: 'Validasi Regulator',
@@ -344,27 +649,95 @@ function AppPRD() {
         node: 'Node Regulator',
         details: [
           'Pengecekan kepatuhan (mis. threshold, AML/CTF sederhana).',
-          'Memberikan persetujuan akhir sebelum commit.'
+          'Memberikan persetujuan akhir sebelum commit.',
         ],
       });
       await delay(1500);
+      if (validatorConfig.failRegulator) {
+        steps[5].status = 'failed';
+      } else {
+        steps[5].status = 'completed';
+        approvals += 1;
+      }
       setFlowSteps([...steps]);
 
-      steps[5].status = 'completed';
+      // Cek threshold konsensus sebelum mengeksekusi kontrak
+      if (approvals < validatorConfig.required) {
+        steps.push({
+          step: 7,
+          title: language === 'id' ? 'Gagal Konsensus' : 'Consensus Failed',
+          description:
+            language === 'id'
+              ? `Persetujuan ${approvals}/${validatorConfig.total} kurang dari threshold ${validatorConfig.required}`
+              : `Approvals ${approvals}/${validatorConfig.total} less than threshold ${validatorConfig.required}`,
+          status: 'failed',
+          node: 'Consensus',
+          details: [
+            language === 'id'
+              ? 'Transaksi tidak dieksekusi karena kurang persetujuan.'
+              : 'Transaction not executed due to insufficient approvals.',
+          ],
+        });
+        await delay(1200);
+        setFlowSteps([...steps]);
+        setIsTransferProcessing(false);
+        setTransactionResult({
+          success: false,
+          message:
+            language === 'id'
+              ? 'Transaksi ditolak: persetujuan validator kurang'
+              : 'Transaction declined: insufficient validator approvals',
+        });
+        // Ledger (failed)
+        appendLedgerEntry({
+          type: 'transfer',
+          interbank: true,
+          fromAccount: fromAcc.accountNumber,
+          toAccount: toAcc.accountNumber,
+          bankFrom: fromAcc.bank,
+          bankTo: toAcc.bank,
+          amount,
+          status: 'Rejected',
+          approvals: {
+            total: validatorConfig.total,
+            required: validatorConfig.required,
+            succeed: approvals,
+          },
+          steps: [...steps],
+          createdAt: new Date().toISOString(),
+        });
+        return;
+      }
+
       // Eksekusi Smart Contract & pembuatan ID
       steps.push({
         step: 7,
         title: 'Eksekusi Smart Contract',
-        description: 'Menjalankan fungsi proposeTransfer untuk commit transaksi ke blockchain',
+        description:
+          (language === 'id'
+            ? 'Menjalankan fungsi proposeTransfer pada validator set untuk commit transaksi'
+            : 'Execute proposeTransfer on the validator set to commit the transaction'),
         status: 'processing',
-        node: 'Blockchain',
+        node: 'Validator Set',
         details: [
-          'Kontrak dieksekusi setelah persetujuan mayoritas terpenuhi.',
-          'Alamat Smart Contract dan ID Transaksi dibuat pada tahap ini.'
+          (language === 'id'
+            ? `Eksekutor: Node ${fromAcc.bank}, Node ${toAcc.bank}, Node Regulator`
+            : `Executors: Node ${fromAcc.bank}, Node ${toAcc.bank}, Regulator Node`),
+          (language === 'id'
+            ? 'Kontrak dieksekusi setelah persetujuan terpenuhi.'
+            : 'Contract executes after approvals are met.'),
+          (language === 'id'
+            ? 'Alamat Smart Contract dan ID Transaksi dibuat pada tahap ini.'
+            : 'Contract address and Transaction ID are produced at this stage.'),
         ],
       });
-      createdContractHash = generateContractHash();
-      createdTxHash = generateTransactionHash();
+      createdContractHash = generateAddressLikeFromName('InterbankSettlement');
+      createdTxHash = generateTxHashDeterministic({
+        type: 'transferInterbank',
+        from: fromAcc.accountNumber,
+        to: toAcc.accountNumber,
+        amount,
+      });
       steps[steps.length - 1].contractAddress = createdContractHash;
       steps[steps.length - 1].transactionHash = createdTxHash;
       await delay(1800);
@@ -379,7 +752,7 @@ function AppPRD() {
         node: `Node ${fromAcc.bank} & ${toAcc.bank}`,
         details: [
           'Saldo rekening pengirim dikurangi dan penerima ditambah.',
-          'Ledger internal bank diperbarui sesuai hasil eksekusi kontrak.'
+          'Ledger internal bank diperbarui sesuai hasil eksekusi kontrak.',
         ],
       });
       await delay(1200);
@@ -387,7 +760,7 @@ function AppPRD() {
 
       steps[7].status = 'completed';
 
-      // Set smart contract data with real hash
+      // Set smart contract data with real hash (simulasi)
       setSmartContractData({
         contractName: 'InterbankSettlement',
         contractAddress: createdContractHash || generateContractHash(),
@@ -402,7 +775,7 @@ function AppPRD() {
             `Node ${toAcc.bank}`,
             'Node Regulator',
           ],
-          approvalThreshold: '2 dari 2',
+          approvalThreshold: `${validatorConfig.required} dari ${validatorConfig.total}`,
           timestamp: new Date().toISOString(),
         },
         result: {
@@ -412,8 +785,31 @@ function AppPRD() {
           transactionHash: createdTxHash || generateTransactionHash(),
         },
       });
+      // Ledger (success)
+      appendLedgerEntry({
+        type: 'transfer',
+        interbank: true,
+        fromAccount: fromAcc.accountNumber,
+        toAccount: toAcc.accountNumber,
+        bankFrom: fromAcc.bank,
+        bankTo: toAcc.bank,
+        amount,
+        fee: feeApplied,
+        status: 'Settled',
+        approvals: {
+          total: validatorConfig.total,
+          required: validatorConfig.required,
+          succeed: approvals,
+        },
+        contractName: 'InterbankSettlement',
+        contractAddress: createdContractHash,
+        transactionHash: createdTxHash,
+        steps: [...steps],
+        createdAt: new Date().toISOString(),
+      });
     } else {
       // Intra-bank transfer flow
+      let feeApplied = FEE_INTRA;
       steps.push({
         step: 1,
         title: 'Validasi Rekening',
@@ -422,7 +818,7 @@ function AppPRD() {
         node: `Node ${fromAcc.bank}`,
         details: [
           'Cek format nomor rekening dan keberadaan rekening.',
-          'Pastikan rekening tidak diblokir atau dibekukan.'
+          'Pastikan rekening tidak diblokir atau dibekukan.',
         ],
       });
       await delay(1200);
@@ -437,7 +833,7 @@ function AppPRD() {
         node: `Node ${fromAcc.bank}`,
         details: [
           'Hitung saldo tersedia vs. saldo tertahan (hold).',
-          'Validasi limit transfer harian dan fee (bila ada).'
+          'Validasi limit transfer harian dan fee (bila ada).',
         ],
       });
       await delay(1200);
@@ -452,7 +848,7 @@ function AppPRD() {
         node: `Node ${fromAcc.bank}`,
         details: [
           'Mempersiapkan data transfer internal antar rekening.',
-          'Validasi akhir sebelum commit.'
+          'Validasi akhir sebelum commit.',
         ],
       });
       await delay(1500);
@@ -463,16 +859,31 @@ function AppPRD() {
       steps.push({
         step: 4,
         title: 'Eksekusi Smart Contract',
-        description: 'Menjalankan fungsi transferInternal pada blockchain',
+        description:
+          (language === 'id'
+            ? 'Menjalankan fungsi transferInternal pada validator set'
+            : 'Execute transferInternal on the validator set'),
         status: 'processing',
-        node: 'Blockchain',
+        node: 'Validator Set',
         details: [
-          'Kontrak dieksekusi untuk mencatat transfer internal.',
-          'Alamat Smart Contract dan ID Transaksi dibuat pada tahap ini.'
+          (language === 'id'
+            ? `Eksekutor: Node ${fromAcc.bank}`
+            : `Executors: Node ${fromAcc.bank}`),
+          (language === 'id'
+            ? 'Kontrak dieksekusi untuk mencatat transfer internal.'
+            : 'Contract executes to record the internal transfer.'),
+          (language === 'id'
+            ? 'Alamat Smart Contract dan ID Transaksi dibuat pada tahap ini.'
+            : 'Contract address and Transaction ID are produced at this stage.'),
         ],
       });
-      createdContractHash = generateContractHash();
-      createdTxHash = generateTransactionHash();
+      createdContractHash = generateAddressLikeFromName('BankTransfer');
+      createdTxHash = generateTxHashDeterministic({
+        type: 'transferIntra',
+        from: fromAcc.accountNumber,
+        to: toAcc.accountNumber,
+        amount,
+      });
       steps[steps.length - 1].contractAddress = createdContractHash;
       steps[steps.length - 1].transactionHash = createdTxHash;
       await delay(1500);
@@ -487,7 +898,7 @@ function AppPRD() {
         node: `Node ${fromAcc.bank}`,
         details: [
           'Saldo rekening pengirim dikurangi dan penerima ditambah.',
-          'Ledger internal bank diperbarui sesuai hasil eksekusi kontrak.'
+          'Ledger internal bank diperbarui sesuai hasil eksekusi kontrak.',
         ],
       });
       await delay(1200);
@@ -495,7 +906,7 @@ function AppPRD() {
 
       steps[4].status = 'completed';
 
-      // Set smart contract data with real hash
+      // Set smart contract data with real hash (simulasi)
       setSmartContractData({
         contractName: 'BankTransfer',
         contractAddress: createdContractHash || generateContractHash(),
@@ -513,21 +924,147 @@ function AppPRD() {
           transactionHash: createdTxHash || generateTransactionHash(),
         },
       });
+      // Ledger (success)
+      appendLedgerEntry({
+        type: 'transfer',
+        interbank: false,
+        fromAccount: fromAcc.accountNumber,
+        toAccount: toAcc.accountNumber,
+        bankFrom: fromAcc.bank,
+        bankTo: toAcc.bank,
+        amount,
+        fee: feeApplied,
+        status: 'Success',
+        contractName: 'BankTransfer',
+        contractAddress: createdContractHash,
+        transactionHash: createdTxHash,
+        steps: [...steps],
+        createdAt: new Date().toISOString(),
+      });
     }
 
     // Update balances
     const updatedAccounts = { ...accounts };
-    updatedAccounts[fromAcc.accountNumber].balance -= parseFloat(amount);
+    // Apply balances with fee (sender pays fee)
+    const feeFinal =
+      fromAcc.bankCode !== toAcc.bankCode ? FEE_INTER : FEE_INTRA;
+    updatedAccounts[fromAcc.accountNumber].balance -=
+      parseFloat(amount) + feeFinal;
     updatedAccounts[toAcc.accountNumber].balance += parseFloat(amount);
     saveAccounts(updatedAccounts);
+    // Update daily usage
+    addDailyUsage(fromAcc.accountNumber, amount);
 
+    // Optional: Dispute & Reversal after settlement (interbank only)
+    if (isInterbank && validatorConfig.dispute) {
+      const stepBase = 9;
+      steps.push({
+        step: stepBase,
+        title: language === 'id' ? 'Dispute Diajukan' : 'Dispute Raised',
+        description:
+          language === 'id'
+            ? 'Nasabah/Bank mengajukan dispute setelah transaksi settle'
+            : 'Customer/Bank raises a dispute after settlement',
+        status: 'processing',
+        node: 'Dispute Desk',
+        details: [
+          language === 'id'
+            ? 'Pengajuan bukti pendukung, ticketing, dan verifikasi awal.'
+            : 'Submit supporting evidence, ticketing, and preliminary verification.',
+        ],
+      });
+      await delay(900);
+      steps[steps.length - 1].status = 'completed';
+      setFlowSteps([...steps]);
+
+      steps.push({
+        step: stepBase + 1,
+        title:
+          language === 'id'
+            ? 'Investigasi & Konsensus'
+            : 'Investigation & Consensus',
+        description:
+          language === 'id'
+            ? 'Jaringan melakukan verifikasi bukti dan mencapai konsensus untuk reversal'
+            : 'Network verifies evidence and reaches consensus for reversal',
+        status: 'processing',
+        node: 'Consensus',
+        details: [
+          language === 'id'
+            ? 'Cross-check hash transaksi dan aturan kepatuhan.'
+            : 'Cross-check transaction hash and compliance rules.',
+        ],
+      });
+      await delay(1100);
+      steps[steps.length - 1].status = 'completed';
+      setFlowSteps([...steps]);
+
+      steps.push({
+        step: stepBase + 2,
+        title: language === 'id' ? 'Reversal Dieksekusi' : 'Reversal Executed',
+        description:
+          language === 'id'
+            ? 'Membalik perubahan saldo sesuai hasil dispute'
+            : 'Reverse balance changes according to dispute result',
+        status: 'processing',
+        node: 'Blockchain',
+        details: [
+          language === 'id'
+            ? 'Saldo dan usage harian dikembalikan.'
+            : 'Balances and daily usage restored.',
+        ],
+      });
+      await delay(1000);
+
+      // Reverse balances and daily usage
+      const reversedAccounts = { ...updatedAccounts };
+      reversedAccounts[fromAcc.accountNumber].balance +=
+        parseFloat(amount) + feeFinal;
+      reversedAccounts[toAcc.accountNumber].balance -= parseFloat(amount);
+      saveAccounts(reversedAccounts);
+      addDailyUsage(fromAcc.accountNumber, -amount);
+
+      steps[steps.length - 1].status = 'completed';
+      setFlowSteps([...steps]);
+
+      // Ledger (reversal)
+      appendLedgerEntry({
+        type: 'transfer',
+        interbank: true,
+        fromAccount: fromAcc.accountNumber,
+        toAccount: toAcc.accountNumber,
+        bankFrom: fromAcc.bank,
+        bankTo: toAcc.bank,
+        amount,
+        fee: feeFinal,
+        status: 'Reversed',
+        reason: 'Dispute',
+        reversalOf: createdTxHash,
+        steps: [...steps],
+        createdAt: new Date().toISOString(),
+      });
+
+      // Overwrite latest balances for result message
+      updatedAccounts[fromAcc.accountNumber].balance =
+        reversedAccounts[fromAcc.accountNumber].balance;
+      updatedAccounts[toAcc.accountNumber].balance =
+        reversedAccounts[toAcc.accountNumber].balance;
+    }
+
+    const baseMsg = `${t.transferSuccess} Rp ${parseFloat(
+      amount
+    ).toLocaleString('id-ID')} ${
+      language === 'id' ? 'dari' : 'from'
+    } ${maskAccount(fromAcc.accountNumber)} ${
+      language === 'id' ? 'ke' : 'to'
+    } ${maskAccount(toAcc.accountNumber)}`;
+    const finalMsg =
+      isInterbank && validatorConfig.dispute
+        ? `${baseMsg} — ${t.reversedDueToDispute}`
+        : baseMsg;
     setTransactionResult({
       success: true,
-      message: `${t.transferSuccess} Rp ${parseFloat(amount).toLocaleString(
-        'id-ID'
-      )} ${language === 'id' ? 'dari' : 'from'} ${fromAcc.accountNumber} ${
-        language === 'id' ? 'ke' : 'to'
-      } ${toAcc.accountNumber}`,
+      message: finalMsg,
       fromBalance: updatedAccounts[fromAcc.accountNumber].balance,
       toBalance: updatedAccounts[toAcc.accountNumber].balance,
     });
@@ -552,12 +1089,14 @@ function AppPRD() {
     steps.push({
       step: 1,
       title: 'Validasi Rekening',
-      description: `${buyerAcc.bank} memverifikasi rekening ${buyerAcc.accountNumber}`,
+      description: `${buyerAcc.bank} memverifikasi rekening ${maskAccount(
+        buyerAcc.accountNumber
+      )}`,
       status: 'processing',
       node: `Node ${buyerAcc.bank}`,
       details: [
         'Cek status rekening dan hak akses.',
-        'Validasi data akun untuk pembayaran.'
+        'Validasi data akun untuk pembayaran.',
       ],
     });
     await delay(1200);
@@ -572,7 +1111,7 @@ function AppPRD() {
       node: `Node ${buyerAcc.bank}`,
       details: [
         'Pastikan saldo cukup untuk harga produk.',
-        'Validasi batas pembayaran dan biaya.'
+        'Validasi batas pembayaran dan biaya.',
       ],
     });
     await delay(1200);
@@ -587,7 +1126,7 @@ function AppPRD() {
       node: 'Escrow Node',
       details: [
         'Dana pembeli di-hold sementara untuk keamanan.',
-        'Mencegah double-spend saat proses fulfillment.'
+        'Mencegah double-spend saat proses fulfillment.',
       ],
     });
     await delay(1600);
@@ -602,7 +1141,7 @@ function AppPRD() {
       node: `Node ${product.provider}`,
       details: [
         'Provider menerima order dan metadata.',
-        'Sistem provider memulai proses pemenuhan (fulfillment).'
+        'Sistem provider memulai proses pemenuhan (fulfillment).',
       ],
     });
     await delay(1800);
@@ -617,7 +1156,7 @@ function AppPRD() {
       node: `Node ${product.provider}`,
       details: [
         'Provider menyiapkan produk/layanan (contoh: token/kode).',
-        'Hasil siap dikirim setelah verifikasi internal.'
+        'Hasil siap dikirim setelah verifikasi internal.',
       ],
     });
     await delay(1600);
@@ -632,7 +1171,7 @@ function AppPRD() {
       node: `Node ${product.provider}`,
       details: [
         'Dana escrow dirilis ke provider setelah fulfillment OK.',
-        'Transaksi siap dicatat permanen.'
+        'Transaksi siap dicatat permanen.',
       ],
     });
     await delay(1400);
@@ -643,16 +1182,31 @@ function AppPRD() {
     steps.push({
       step: 7,
       title: 'Eksekusi Smart Contract',
-      description: 'Menjalankan fungsi createPurchase untuk mencatat transaksi di blockchain',
+      description:
+        (language === 'id'
+          ? 'Menjalankan fungsi createPurchase pada validator set untuk mencatat transaksi'
+          : 'Execute createPurchase on the validator set to record the transaction'),
       status: 'processing',
-      node: 'Blockchain',
+      node: 'Validator Set',
       details: [
-        'Kontrak dieksekusi untuk mencatat pembelian.',
-        'Alamat Smart Contract dan ID Transaksi dibuat pada tahap ini.'
+        (language === 'id'
+          ? `Eksekutor: Node ${buyerAcc.bank}, Node ${product.provider}`
+          : `Executors: Node ${buyerAcc.bank}, Node ${product.provider}`),
+        (language === 'id'
+          ? 'Kontrak dieksekusi untuk mencatat pembelian.'
+          : 'Contract executes to record the purchase.'),
+        (language === 'id'
+          ? 'Alamat Smart Contract dan ID Transaksi dibuat pada tahap ini.'
+          : 'Contract address and Transaction ID are produced at this stage.'),
       ],
     });
-    createdContractHash = generateContractHash();
-    createdTxHash = generateTransactionHash();
+    createdContractHash = generateAddressLikeFromName('PurchaseProcessor');
+    createdTxHash = generateTxHashDeterministic({
+      type: 'purchase',
+      buyer: buyerAcc.accountNumber,
+      productId: product.id,
+      amount: product.price,
+    });
     steps[steps.length - 1].contractAddress = createdContractHash;
     steps[steps.length - 1].transactionHash = createdTxHash;
     await delay(1500);
@@ -667,7 +1221,7 @@ function AppPRD() {
       node: `Node ${buyerAcc.bank}`,
       details: [
         'Saldo rekening pembeli dikurangi sesuai harga produk.',
-        'Ledger internal bank diperbarui sesuai hasil eksekusi kontrak.'
+        'Ledger internal bank diperbarui sesuai hasil eksekusi kontrak.',
       ],
     });
     await delay(1200);
@@ -680,10 +1234,11 @@ function AppPRD() {
     updatedAccounts[buyerAcc.accountNumber].balance -= product.price;
     saveAccounts(updatedAccounts);
 
-    // Set smart contract data with real hash
+    // Set smart contract data with real hash (simulasi)
     setSmartContractData({
       contractName: 'PurchaseProcessor',
-      contractAddress: createdContractHash || generateContractHash(),
+      contractAddress:
+        createdContractHash || generateAddressLikeFromName('PurchaseProcessor'),
       function: 'createPurchase',
       parameters: {
         buyerAccount: buyerAcc.accountNumber,
@@ -697,15 +1252,135 @@ function AppPRD() {
         orderId: Math.floor(Math.random() * 10000),
         status: 'Fulfilled',
         executionTime: '5.5 detik',
-        transactionHash: createdTxHash || generateTransactionHash(),
+        transactionHash:
+          createdTxHash ||
+          generateTxHashDeterministic({
+            type: 'purchase',
+            buyer: buyerAcc.accountNumber,
+            productId: product.id,
+            amount: product.price,
+          }),
       },
     });
+    // Ledger (success)
+    appendLedgerEntry({
+      type: 'purchase',
+      buyerAccount: buyerAcc.accountNumber,
+      productId: product.id,
+      productName: product.name,
+      provider: product.provider,
+      amount: product.price,
+      status: 'Fulfilled',
+      contractName: 'PurchaseProcessor',
+      contractAddress: generateAddressLikeFromName('PurchaseProcessor'),
+      transactionHash: generateTxHashDeterministic({
+        type: 'purchase',
+        buyer: buyerAcc.accountNumber,
+        productId: product.id,
+        amount: product.price,
+      }),
+      steps: [...steps],
+      createdAt: new Date().toISOString(),
+    });
 
+    // Optional: Dispute & Reversal after settlement (purchase parity)
+    if (validatorConfig.dispute) {
+      const stepBase = 9;
+      steps.push({
+        step: stepBase,
+        title: language === 'id' ? 'Dispute Diajukan' : 'Dispute Raised',
+        description:
+          language === 'id'
+            ? 'Nasabah/Bank mengajukan dispute setelah transaksi settle'
+            : 'Customer/Bank raises a dispute after settlement',
+        status: 'processing',
+        node: 'Dispute Desk',
+        details: [
+          language === 'id'
+            ? 'Pengajuan bukti pendukung, ticketing, dan verifikasi awal.'
+            : 'Submit supporting evidence, ticketing, and preliminary verification.',
+        ],
+      });
+      await delay(900);
+      steps[steps.length - 1].status = 'completed';
+      setFlowSteps([...steps]);
+
+      steps.push({
+        step: stepBase + 1,
+        title:
+          language === 'id'
+            ? 'Investigasi & Konsensus'
+            : 'Investigation & Consensus',
+        description:
+          language === 'id'
+            ? 'Jaringan melakukan verifikasi bukti dan mencapai konsensus untuk reversal'
+            : 'Network verifies evidence and reaches consensus for reversal',
+        status: 'processing',
+        node: 'Consensus',
+        details: [
+          language === 'id'
+            ? 'Cross-check hash transaksi dan aturan kepatuhan.'
+            : 'Cross-check transaction hash and compliance rules.',
+        ],
+      });
+      await delay(1100);
+      steps[steps.length - 1].status = 'completed';
+      setFlowSteps([...steps]);
+
+      steps.push({
+        step: stepBase + 2,
+        title: language === 'id' ? 'Reversal Dieksekusi' : 'Reversal Executed',
+        description:
+          language === 'id'
+            ? 'Membalik perubahan saldo sesuai hasil dispute'
+            : 'Reverse balance changes according to dispute result',
+        status: 'processing',
+        node: 'Blockchain',
+        details: [
+          language === 'id'
+            ? 'Saldo dikembalikan ke sebelum transaksi.'
+            : 'Balance restored to pre-transaction state.',
+        ],
+      });
+      await delay(1000);
+
+      // Reverse buyer balance
+      const reversedAccounts = { ...updatedAccounts };
+      reversedAccounts[buyerAcc.accountNumber].balance += product.price;
+      saveAccounts(reversedAccounts);
+
+      steps[steps.length - 1].status = 'completed';
+      setFlowSteps([...steps]);
+
+      // Ledger (reversal)
+      appendLedgerEntry({
+        type: 'purchase',
+        buyerAccount: buyerAcc.accountNumber,
+        productId: product.id,
+        productName: product.name,
+        provider: product.provider,
+        amount: product.price,
+        status: 'Reversed',
+        reason: 'Dispute',
+        reversalOf: createdTxHash,
+        steps: [...steps],
+        createdAt: new Date().toISOString(),
+      });
+
+      // Update the reference balance for result
+      updatedAccounts[buyerAcc.accountNumber].balance =
+        reversedAccounts[buyerAcc.accountNumber].balance;
+    }
+
+    const basePurchaseMsg = `${t.purchaseSuccess} ${product.name} ${
+      language === 'id' ? 'untuk rekening' : 'for account'
+    } ${maskAccount(buyerAcc.accountNumber)}`;
+    const finalPurchaseMsg = validatorConfig.dispute
+      ? `${basePurchaseMsg} — ${t.reversedDueToDispute}`
+      : basePurchaseMsg;
     setTransactionResult({
       success: true,
-      message: `${t.purchaseSuccess} ${product.name} ${
-        language === 'id' ? 'untuk rekening' : 'for account'
-      } ${buyerAcc.accountNumber}`,
+      message: finalPurchaseMsg,
       remainingBalance: updatedAccounts[buyerAcc.accountNumber].balance,
     });
 
@@ -714,7 +1389,57 @@ function AppPRD() {
     setShowContractModal(true);
   };
 
-  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const delay = (ms) =>
+    new Promise((resolve) =>
+      setTimeout(resolve, Math.max(0, Math.round(ms * speedFactor)))
+    );
+
+  // Deterministic 64-hex generator (simple, for simulation)
+  const deterministicHex64 = (input) => {
+    const str = typeof input === 'string' ? input : JSON.stringify(input);
+    let h1 = 0x811c9dc5,
+      h2 = 0x811c9dc5,
+      p = 0x01000193;
+    for (let i = 0; i < str.length; i++) {
+      const c = str.charCodeAt(i);
+      h1 ^= c;
+      h1 = (h1 * p) >>> 0;
+      h2 ^= c + i;
+      h2 = (h2 * p) >>> 0;
+    }
+    const to8 = (x) => ('00000000' + (x >>> 0).toString(16)).slice(-8);
+    const hex =
+      to8(h1) +
+      to8(h2) +
+      to8((h1 >>> 1) ^ h2) +
+      to8((h2 >>> 1) ^ h1) +
+      to8(h1 ^ 0xa5a5a5a5) +
+      to8(h2 ^ 0x5a5a5a5a) +
+      to8((h1 + h2) >>> 0) +
+      to8((h1 * 31) >>> 0);
+    return '0x' + hex.slice(0, 64);
+  };
+
+  // Address-like 40-hex from name (deterministic, for simulation)
+  const generateAddressLikeFromName = (name) => {
+    const hex = deterministicHex64(name).slice(2); // 64 hex
+    return '0x' + hex.slice(0, 40); // 20 bytes
+  };
+
+  // Deterministic tx hash from parameters (for simulation)
+  const generateTxHashDeterministic = (params) => deterministicHex64(params);
+
+  // Ledger helpers
+  const LEDGER_KEY = 'banking_ledger';
+  const appendLedgerEntry = (entry) => {
+    try {
+      const raw = localStorage.getItem(LEDGER_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      arr.unshift(entry);
+      localStorage.setItem(LEDGER_KEY, JSON.stringify(arr));
+      setLedgerTick((k) => k + 1);
+    } catch {}
+  };
 
   // Generate realistic contract hash (64 hex characters)
   const generateContractHash = () => {
@@ -805,6 +1530,22 @@ function AppPRD() {
   }
 
   const accountList = Object.values(accounts);
+  const accountsByBank = useMemo(() => {
+    const groups = {};
+    Object.values(accounts).forEach((acc) => {
+      groups[acc.bank] = groups[acc.bank] || [];
+      groups[acc.bank].push(acc);
+    });
+    return groups;
+  }, [accounts]);
+  const productsByProvider = useMemo(() => {
+    const groups = {};
+    products.forEach((p) => {
+      groups[p.provider] = groups[p.provider] || [];
+      groups[p.provider].push(p);
+    });
+    return groups;
+  }, [products]);
 
   return (
     <div className='container'>
@@ -883,16 +1624,166 @@ function AppPRD() {
           marginBottom: '24px',
           padding: '16px 20px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          overflow: 'visible',
+          position: 'relative',
         }}
       >
-        <p
-          style={{
-            margin: 0,
-            color: '#1976d2',
-            fontSize: '14px',
-            lineHeight: '1.6',
-          }}
-        ></p>
+        <div style={{ display: 'grid', gap: 12 }}>
+          <h3 style={{ margin: '0 0 8px 0', color: '#1976d2' }}>
+            {t.simulationControlTitle}
+          </h3>
+
+          {/* Row: Speed */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '180px 1fr 60px',
+              gap: 12,
+              alignItems: 'center',
+            }}
+          >
+            <label
+              style={{
+                color: '#374151',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              {t.processSpeed}
+              <InfoIcon text={t.tooltipProcessSpeed} />
+            </label>
+            <input
+              type='range'
+              min='0.5'
+              max='3'
+              step='0.1'
+              value={speedFactor}
+              onChange={(e) => setSpeedFactor(parseFloat(e.target.value))}
+              style={{ width: '100%' }}
+            />
+            <div
+              style={{
+                color: '#374151',
+                fontSize: 12,
+                textAlign: 'right',
+                minWidth: 60,
+              }}
+            >
+              {speedFactor.toFixed(1)}x
+            </div>
+          </div>
+
+          {/* Row: Extra toggles (horizontal) */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '180px 1fr',
+              gap: 12,
+              alignItems: 'center',
+            }}
+          >
+            <label style={{ color: '#374151', fontWeight: 600 }}>
+              {t.simulationExtras}
+            </label>
+            <div
+              style={{
+                display: 'grid',
+                gap: 16,
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                alignItems: 'center',
+              }}
+            >
+              {/* Toggle: Fail To Bank */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  id='failToBank'
+                  type='checkbox'
+                  checked={validatorConfig.failToBank}
+                  onChange={(e) =>
+                    setValidatorConfig({
+                      ...validatorConfig,
+                      failToBank: e.target.checked,
+                    })
+                  }
+                  style={{ width: 18, height: 18 }}
+                />
+                <label
+                  htmlFor='failToBank'
+                  style={{
+                    color: '#374151',
+                    whiteSpace: 'nowrap',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    margin: 0,
+                  }}
+                >
+                  {t.simulateFailToBank}
+                </label>
+                <InfoIcon text={t.tooltipFailToBank} />
+              </div>
+
+              {/* Toggle: Fail Regulator */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  id='failRegulator'
+                  type='checkbox'
+                  checked={validatorConfig.failRegulator}
+                  onChange={(e) =>
+                    setValidatorConfig({
+                      ...validatorConfig,
+                      failRegulator: e.target.checked,
+                    })
+                  }
+                  style={{ width: 18, height: 18 }}
+                />
+                <label
+                  htmlFor='failRegulator'
+                  style={{
+                    color: '#374151',
+                    whiteSpace: 'nowrap',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    margin: 0,
+                  }}
+                >
+                  {t.simulateFailRegulator}
+                </label>
+                <InfoIcon text={t.tooltipFailRegulator} />
+              </div>
+
+              {/* Toggle: Dispute & Reversal */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  id='disputeToggle'
+                  type='checkbox'
+                  checked={validatorConfig.dispute}
+                  onChange={(e) =>
+                    setValidatorConfig({
+                      ...validatorConfig,
+                      dispute: e.target.checked,
+                    })
+                  }
+                  style={{ width: 18, height: 18 }}
+                />
+                <label
+                  htmlFor='disputeToggle'
+                  style={{
+                    color: '#374151',
+                    whiteSpace: 'nowrap',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    margin: 0,
+                  }}
+                >
+                  {t.simulateDispute}
+                </label>
+                <InfoIcon text={t.tooltipDisputeReversal} />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Transfer Panel */}
@@ -923,14 +1814,11 @@ function AppPRD() {
               border: '2px solid #e0e0e0',
               borderRadius: '8px',
               fontSize: '15px',
+              fontVariantNumeric: 'tabular-nums',
               backgroundColor:
-                isTransferProcessing || isPurchaseProcessing
-                  ? '#f5f5f5'
-                  : 'white',
+                isTransferProcessing || isPurchaseProcessing ? '#f5f5f5' : 'white',
               cursor:
-                isTransferProcessing || isPurchaseProcessing
-                  ? 'not-allowed'
-                  : 'pointer',
+                isTransferProcessing || isPurchaseProcessing ? 'not-allowed' : 'pointer',
               appearance: 'none',
               backgroundImage:
                 "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")",
@@ -941,15 +1829,27 @@ function AppPRD() {
             }}
           >
             <option value=''>{t.selectFromAccount}</option>
-            {accountList.map((acc) => (
-              <option key={acc.accountNumber} value={acc.accountNumber}>
-                {acc.accountNumber} - {acc.accountName} ({acc.bank}) -{' '}
-                {language === 'id' ? 'Saldo' : 'Balance'}: Rp{' '}
-                {acc.balance.toLocaleString('id-ID')}
-              </option>
-            ))}
+            {Object.keys(accountsByBank)
+              .sort()
+              .map((bank) => (
+                <optgroup key={bank} label={bank}>
+                  {accountsByBank[bank]
+                    .slice()
+                    .sort((a, b) => a.accountName.localeCompare(b.accountName))
+                    .map((acc) => (
+                      <option
+                        key={acc.accountNumber}
+                        value={acc.accountNumber}
+                        title={`${acc.accountNumber} · ${acc.accountName} · ${bank} · Rp ${acc.balance.toLocaleString('id-ID')}`}
+                      >
+                        {acc.accountName} - {maskAccount(acc.accountNumber)} - Rp {acc.balance.toLocaleString('id-ID')}
+                      </option>
+                    ))}
+                </optgroup>
+              ))}
           </select>
         </div>
+
         <div className='form-group'>
           <label>{t.toAccount}</label>
           <select
@@ -964,14 +1864,11 @@ function AppPRD() {
               border: '2px solid #e0e0e0',
               borderRadius: '8px',
               fontSize: '15px',
+              fontVariantNumeric: 'tabular-nums',
               backgroundColor:
-                isTransferProcessing || isPurchaseProcessing
-                  ? '#f5f5f5'
-                  : 'white',
+                isTransferProcessing || isPurchaseProcessing ? '#f5f5f5' : 'white',
               cursor:
-                isTransferProcessing || isPurchaseProcessing
-                  ? 'not-allowed'
-                  : 'pointer',
+                isTransferProcessing || isPurchaseProcessing ? 'not-allowed' : 'pointer',
               appearance: 'none',
               backgroundImage:
                 "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")",
@@ -982,28 +1879,38 @@ function AppPRD() {
             }}
           >
             <option value=''>{t.selectToAccount}</option>
-            {accountList
-              .filter((acc) => acc.accountNumber !== transferForm.fromAccount)
-              .map((acc) => (
-                <option key={acc.accountNumber} value={acc.accountNumber}>
-                  {acc.accountNumber} - {acc.accountName} ({acc.bank}) -{' '}
-                  {language === 'id' ? 'Saldo' : 'Balance'}: Rp{' '}
-                  {acc.balance.toLocaleString('id-ID')}
-                </option>
+            {Object.keys(accountsByBank)
+              .sort()
+              .map((bank) => (
+                <optgroup key={bank} label={bank}>
+                  {accountsByBank[bank]
+                    .filter((acc) => acc.accountNumber !== transferForm.fromAccount)
+                    .slice()
+                    .sort((a, b) => a.accountName.localeCompare(b.accountName))
+                    .map((acc) => (
+                      <option
+                        key={acc.accountNumber}
+                        value={acc.accountNumber}
+                        title={`${acc.accountNumber} · ${acc.accountName} · ${bank} · Rp ${acc.balance.toLocaleString('id-ID')}`}
+                      >
+                        {acc.accountName} - {maskAccount(acc.accountNumber)} - Rp {acc.balance.toLocaleString('id-ID')}
+                      </option>
+                    ))}
+                </optgroup>
               ))}
           </select>
         </div>
+
         <div className='form-group'>
           <label>{t.amount}</label>
           <input
-            type='number'
-            value={transferForm.amount}
-            onChange={(e) =>
-              setTransferForm({ ...transferForm, amount: e.target.value })
-            }
+            type='text'
+            value={formatCurrencyInput(transferForm.amount, language)}
+            onChange={(e) => {
+              const digits = (e.target.value || '').replace(/\D/g, '');
+              setTransferForm({ ...transferForm, amount: digits });
+            }}
             placeholder='0'
-            step='1000'
-            min='0'
             disabled={isTransferProcessing || isPurchaseProcessing}
             style={{
               width: '100%',
@@ -1011,9 +1918,11 @@ function AppPRD() {
               border: '2px solid #e0e0e0',
               borderRadius: '8px',
               fontSize: '15px',
+              fontVariantNumeric: 'tabular-nums',
             }}
           />
         </div>
+
         <div className='form-group'>
           <label>{t.memo}</label>
           <input
@@ -1033,6 +1942,7 @@ function AppPRD() {
             }}
           />
         </div>
+
         <button
           onClick={handleTransfer}
           disabled={
@@ -1095,14 +2005,11 @@ function AppPRD() {
               border: '2px solid #e0e0e0',
               borderRadius: '8px',
               fontSize: '15px',
+              fontVariantNumeric: 'tabular-nums',
               backgroundColor:
-                isTransferProcessing || isPurchaseProcessing
-                  ? '#f5f5f5'
-                  : 'white',
+                isTransferProcessing || isPurchaseProcessing ? '#f5f5f5' : 'white',
               cursor:
-                isTransferProcessing || isPurchaseProcessing
-                  ? 'not-allowed'
-                  : 'pointer',
+                isTransferProcessing || isPurchaseProcessing ? 'not-allowed' : 'pointer',
               appearance: 'none',
               backgroundImage:
                 "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")",
@@ -1113,15 +2020,27 @@ function AppPRD() {
             }}
           >
             <option value=''>{t.selectBuyerAccount}</option>
-            {accountList.map((acc) => (
-              <option key={acc.accountNumber} value={acc.accountNumber}>
-                {acc.accountNumber} - {acc.accountName} ({acc.bank}) -{' '}
-                {language === 'id' ? 'Saldo' : 'Balance'}: Rp{' '}
-                {acc.balance.toLocaleString('id-ID')}
-              </option>
-            ))}
+            {Object.keys(accountsByBank)
+              .sort()
+              .map((bank) => (
+                <optgroup key={bank} label={bank}>
+                  {accountsByBank[bank]
+                    .slice()
+                    .sort((a, b) => a.accountName.localeCompare(b.accountName))
+                    .map((acc) => (
+                      <option
+                        key={acc.accountNumber}
+                        value={acc.accountNumber}
+                        title={`${acc.accountNumber} · ${acc.accountName} · ${bank} · Rp ${acc.balance.toLocaleString('id-ID')}`}
+                      >
+                        {acc.accountName} - {maskAccount(acc.accountNumber)} - Rp {acc.balance.toLocaleString('id-ID')}
+                      </option>
+                    ))}
+                </optgroup>
+              ))}
           </select>
         </div>
+
         <div className='form-group'>
           <label>{t.product}</label>
           <select
@@ -1136,14 +2055,11 @@ function AppPRD() {
               border: '2px solid #e0e0e0',
               borderRadius: '8px',
               fontSize: '15px',
+              fontVariantNumeric: 'tabular-nums',
               backgroundColor:
-                isTransferProcessing || isPurchaseProcessing
-                  ? '#f5f5f5'
-                  : 'white',
+                isTransferProcessing || isPurchaseProcessing ? '#f5f5f5' : 'white',
               cursor:
-                isTransferProcessing || isPurchaseProcessing
-                  ? 'not-allowed'
-                  : 'pointer',
+                isTransferProcessing || isPurchaseProcessing ? 'not-allowed' : 'pointer',
               appearance: 'none',
               backgroundImage:
                 "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")",
@@ -1154,14 +2070,27 @@ function AppPRD() {
             }}
           >
             <option value=''>{t.selectProduct}</option>
-            {products.map((product) => (
-              <option key={product.id} value={product.id}>
-                {product.name} - Rp {product.price.toLocaleString('id-ID')} (
-                {product.provider})
-              </option>
-            ))}
+            {Object.keys(productsByProvider)
+              .sort()
+              .map((provider) => (
+                <optgroup key={provider} label={provider}>
+                  {productsByProvider[provider]
+                    .slice()
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((product) => (
+                      <option
+                        key={product.id}
+                        value={product.id}
+                        title={`${provider} · ${product.name} · Rp ${product.price.toLocaleString('id-ID')}`}
+                      >
+                        {product.name} - Rp {product.price.toLocaleString('id-ID')}
+                      </option>
+                    ))}
+                </optgroup>
+              ))}
           </select>
         </div>
+
         <button
           onClick={handlePurchase}
           disabled={
@@ -1191,6 +2120,11 @@ function AppPRD() {
         >
           {isPurchaseProcessing ? t.processing : t.buyNow}
         </button>
+      </div>
+
+      {/* History & Audit */}
+      <div className='card' style={{ background: 'white' }}>
+        <HistoryPanel tick={ledgerTick} lang={language} />
       </div>
 
       {/* Processing Flow Modal */}
@@ -1245,26 +2179,57 @@ function AppPRD() {
               >
                 {t.processingTransaction}
               </h2>
-              {!isTransferProcessing && !isPurchaseProcessing && smartContractData && (
-                <button
-                  onClick={() => {
-                    setShowFlowModal(false);
-                    setShowContractModal(true);
-                  }}
-                  style={{
-                    background: '#f0f0f0',
-                    color: '#333',
-                    border: '1px solid #ddd',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                  }}
-                >
-                  {t.viewResult}
-                </button>
-              )}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {!isTransferProcessing &&
+                  !isPurchaseProcessing &&
+                  smartContractData && (
+                    <button
+                      onClick={() => {
+                        setShowFlowModal(false);
+                        setShowContractModal(true);
+                      }}
+                      style={{
+                        background: '#f0f0f0',
+                        color: '#333',
+                        border: '1px solid #ddd',
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                      }}
+                    >
+                      {t.viewResult}
+                    </button>
+                  )}
+                {!isTransferProcessing &&
+                  !isPurchaseProcessing &&
+                  flowSteps.some((s) => s.status === 'failed') && (
+                    <button
+                      onClick={() => setShowFlowModal(false)}
+                      aria-label='Close'
+                      title='Close'
+                      style={{
+                        background: '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '32px',
+                        height: '32px',
+                        padding: 0,
+                        cursor: 'pointer',
+                        fontSize: '18px',
+                        lineHeight: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+                      }}
+                    >
+                      ×
+                    </button>
+                  )}
+              </div>
             </div>
             <div style={{ marginTop: '20px' }}>
               {flowSteps.map((step, idx) => (
@@ -1381,7 +2346,13 @@ function AppPRD() {
                       </ul>
                     )}
                     {(step.contractAddress || step.transactionHash) && (
-                      <div style={{ marginTop: '12px', display: 'grid', gap: '10px' }}>
+                      <div
+                        style={{
+                          marginTop: '12px',
+                          display: 'grid',
+                          gap: '10px',
+                        }}
+                      >
                         {step.contractAddress && (
                           <div>
                             <strong
@@ -1401,7 +2372,8 @@ function AppPRD() {
                                 padding: '12px',
                                 background: '#f7fafc',
                                 borderRadius: '8px',
-                                fontFamily: 'Monaco, Menlo, "Courier New", monospace',
+                                fontFamily:
+                                  'Monaco, Menlo, "Courier New", monospace',
                                 fontSize: '12px',
                                 wordBreak: 'break-all',
                                 border: '2px solid #e2e8f0',
@@ -1432,7 +2404,8 @@ function AppPRD() {
                                 padding: '12px',
                                 background: '#f7fafc',
                                 borderRadius: '8px',
-                                fontFamily: 'Monaco, Menlo, "Courier New", monospace',
+                                fontFamily:
+                                  'Monaco, Menlo, "Courier New", monospace',
                                 fontSize: '12px',
                                 wordBreak: 'break-all',
                                 border: '2px solid #e2e8f0',
@@ -1624,6 +2597,32 @@ function AppPRD() {
                 >
                   {smartContractData.contractAddress}
                 </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    marginTop: '8px',
+                  }}
+                >
+                  <button
+                    onClick={() =>
+                      navigator.clipboard?.writeText?.(
+                        smartContractData.contractAddress
+                      )
+                    }
+                    style={{
+                      background: '#f0f0f0',
+                      color: '#333',
+                      border: '1px solid #ddd',
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                    }}
+                  >
+                    {t.copy}
+                  </button>
+                </div>
               </div>
 
               {smartContractData.result.transactionHash && (
@@ -1654,6 +2653,32 @@ function AppPRD() {
                     }}
                   >
                     {smartContractData.result.transactionHash}
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      marginTop: '8px',
+                    }}
+                  >
+                    <button
+                      onClick={() =>
+                        navigator.clipboard?.writeText?.(
+                          smartContractData.result.transactionHash
+                        )
+                      }
+                      style={{
+                        background: '#f0f0f0',
+                        color: '#333',
+                        border: '1px solid #ddd',
+                        padding: '6px 10px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                      }}
+                    >
+                      {t.copy}
+                    </button>
                   </div>
                 </div>
               )}

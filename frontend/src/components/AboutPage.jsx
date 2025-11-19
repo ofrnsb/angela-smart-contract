@@ -58,7 +58,7 @@ const translations = {
     nodeWhatIsList: [
       'Menyimpan data transaksi,',
       'Memverifikasi transaksi,',
-      'Menjalankan smart contract,',
+      'Memvalidasi/menjalankan smart contract (sesuai peran),',
       'Menyinkronkan catatan ke semua pihak terkait.',
     ],
     nodeContext: 'Dalam konteks Indonesia:',
@@ -128,6 +128,8 @@ const translations = {
     ],
     executionNote:
       'Sifatnya deterministik: **Jika syarat terpenuhi, tidak ada pihak yang dapat menahan atau mengubah transaksi.**',
+    addressTxNote:
+      'Catatan: **alamat kontrak umumnya tetap** (sekali deploy), sedangkan **ID transaksi unik** per transaksi.',
     recording: 'D. Pencatatan Final (Immutable Record)',
     recordingDesc: 'Catatan transaksi kemudian:',
     recordingList: [
@@ -237,6 +239,39 @@ const translations = {
     ],
     conclusionFinal:
       'Ini menjadikan smart contract sebuah pendekatan strategis untuk modernisasi sistem pembayaran Indonesia.',
+
+    // 9. Panduan Simulasi
+    simGuide: '9. Panduan Simulasi di Aplikasi (Tanpa Backend)',
+    simGuideDesc:
+      'Halaman utama menyediakan kontrol simulasi untuk membantu memahami alur:',
+    simGuideList: [
+      'Kecepatan Proses: mengubah durasi tiap langkah (slider).',
+      'Threshold Validator: menentukan jumlah persetujuan yang dibutuhkan (1–3 dari 3 node).',
+      'Simulasikan Kegagalan Bank Tujuan: memaksa langkah validasi bank tujuan gagal.',
+      'Privacy: nomor rekening dimasking (xxxx1234), alamat kontrak & ID transaksi bersifat simulasi.',
+      'Fee & Limit: fee interbank Rp 2.500, limit harian Rp 10.000.000, saldo pengirim dipotong jumlah+fee.',
+      'Riwayat & Audit: semua transaksi dicatat lokal (localStorage) dan dapat dilihat pada panel Riwayat & Audit.',
+    ],
+    governanceTitle: '10. Tata Kelola & Kepatuhan',
+    governanceDesc: 'Ringkasan kontrol praktis untuk implementasi nyata:',
+    governanceList: [
+      'Onboarding node: verifikasi identitas, sertifikat, dan akses jaringan.',
+      'Kebijakan upgrade kontrak (proxy + timelock + multi-sig) dan rollback plan.',
+      'Change management dan segregasi tugas (SoD) untuk dev/ops/audit.',
+      'Pemetaan kontrol ke OJK/BI/PPATK/UU PDP dan audit ISO 27001.',
+      'Manajemen kunci di HSM/KMS/MPC, rotasi kunci, dan akses berbasis role.',
+      'Incident response: pausable contract, prosedur post-mortem dan notifikasi.',
+    ],
+    operationsTitle: '11. Operasional (SLA/DR/Monitoring)',
+    operationsDesc: 'Checklist operasional untuk reliability & keamanan:',
+    operationsList: [
+      'Target SLO/TPS/latensi, sizing validator, dan pengaturan block time.',
+      'Observability: metrics/logs/traces, SIEM, alert, dan anomaly detection.',
+      'DR: snapshot state, backup schedule, uji RTO/RPO dan drill berkala.',
+      'Zero-trust network, segmentasi, review akses berkala, hardening node.',
+      'Integrasi downstream: idempoten, retry, reversals/dispute, cut-off window.',
+      'Uji QA: fuzz/invariant (Foundry), analisis statik (Slither), coverage & audit eksternal.',
+    ],
   },
   en: {
     back: '← Back to Application',
@@ -294,7 +329,7 @@ const translations = {
     nodeWhatIsList: [
       'Stores transaction data,',
       'Verifies transactions,',
-      'Executes smart contracts,',
+      'Validates/executes smart contracts (as per role),',
       'Synchronizes records to all relevant parties.',
     ],
     nodeContext: 'In the Indonesian context:',
@@ -363,6 +398,8 @@ const translations = {
     ],
     executionNote:
       'It is deterministic: **If conditions are met, no party can hold or change the transaction.**',
+    addressTxNote:
+      'Note: **contract addresses are typically constant** (single deploy), while **transaction IDs are unique** per transaction.',
     recording: 'D. Final Recording (Immutable Record)',
     recordingDesc: 'Transaction records are then:',
     recordingList: [
@@ -472,6 +509,39 @@ const translations = {
     ],
     conclusionFinal:
       "This makes smart contracts a strategic approach for modernizing Indonesia's payment system.",
+
+    // 9. Simulation Guide
+    simGuide: '9. Simulation Guide in the App (No Backend)',
+    simGuideDesc:
+      'The main page provides simulation controls to help you understand the flow:',
+    simGuideList: [
+      'Process Speed: adjust per-step duration (slider).',
+      'Validator Threshold: set required approvals (1–3 of 3 nodes).',
+      'Simulate Destination Bank Failure: force the destination bank validation to fail.',
+      'Privacy: account numbers are masked (xxxx1234); contract address & transaction ID are simulated.',
+      'Fees & Limits: interbank fee Rp 2,500; daily limit Rp 10,000,000; sender balance is reduced by amount+fee.',
+      'History & Audit: all transactions are stored locally (localStorage) and visible in the History & Audit panel.',
+    ],
+    governanceTitle: '10. Governance & Compliance',
+    governanceDesc: 'Practical controls for real deployments:',
+    governanceList: [
+      'Node onboarding: identity verification, certificates, and network access.',
+      'Contract upgrade policy (proxy + timelock + multi-sig) and rollback plan.',
+      'Change management and segregation of duties for dev/ops/audit.',
+      'Control mapping to OJK/BI/PPATK/PDPA and ISO 27001 audits.',
+      'Key management in HSM/KMS/MPC, key rotation, and fine-grained RBAC.',
+      'Incident response: pausable contracts, post-mortem, and notifications.',
+    ],
+    operationsTitle: '11. Operations (SLA/DR/Monitoring)',
+    operationsDesc: 'Operational checklist for reliability & security:',
+    operationsList: [
+      'SLO/TPS/latency targets, validator sizing, and block-time tuning.',
+      'Observability: metrics/logs/traces, SIEM, alerting, anomaly detection.',
+      'DR: state snapshots, backup schedule, RTO/RPO tests and periodic drills.',
+      'Zero-trust networking, segmentation, periodic access review, node hardening.',
+      'Downstream integration: idempotency, retries, reversals/disputes, cut-off windows.',
+      'QA: fuzz/invariant (Foundry), static analysis (Slither), coverage & external audits.',
+    ],
   },
 };
 
@@ -592,6 +662,47 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
           </div>
         </section>
 
+        {/* 10. Governance/Compliance */}
+        <section className='about-section'>
+          <h2>{t.governanceTitle}</h2>
+          <div className='explanation-box'>
+            <p>{t.governanceDesc}</p>
+            <ul style={{ marginTop: '10px', paddingLeft: '25px' }}>
+              {t.governanceList.map((item, idx) => (
+                <li key={idx} style={{ marginBottom: '8px', lineHeight: '1.6' }}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* 11. Operations */}
+        <section className='about-section'>
+          <h2>{t.operationsTitle}</h2>
+          <div className='explanation-box'>
+            <p>{t.operationsDesc}</p>
+            <ul style={{ marginTop: '10px', paddingLeft: '25px' }}>
+              {t.operationsList.map((item, idx) => (
+                <li key={idx} style={{ marginBottom: '8px', lineHeight: '1.6' }}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* 9. Panduan Simulasi */}
+        <section className='about-section'>
+          <h2>{t.simGuide}</h2>
+          <div className='explanation-box'>
+            <p>{t.simGuideDesc}</p>
+            <ul style={{ marginTop: '10px', paddingLeft: '25px' }}>
+              {t.simGuideList.map((item, idx) => (
+                <li key={idx} style={{ marginBottom: '8px', lineHeight: '1.6' }}>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
         {/* 2. Apa itu Smart Contract */}
         <section className='about-section'>
           <h2>{t.whatIs}</h2>
@@ -661,7 +772,7 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
                         Eksekusi oleh pegawai/mesin pusat
                       </td>
                       <td style={{ padding: '12px', border: '1px solid #ddd' }}>
-                        Eksekusi otomatis oleh seluruh node
+                        Eksekusi otomatis oleh validator/mesin eksekusi (hasil disinkronkan ke node terkait)
                       </td>
                     </tr>
                     <tr>
@@ -753,9 +864,7 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
                 />
               ))}
             </ul>
-            <h3 style={{ marginTop: '25px' }}>
-              Node-node inilah yang memastikan bahwa:
-            </h3>
+            <h3 style={{ marginTop: '25px' }}>{t.nodeEnsure}</h3>
             <ul style={{ marginTop: '15px', paddingLeft: '25px' }}>
               {t.nodeEnsureList.map((item, idx) => (
                 <li
@@ -885,6 +994,15 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
               style={{ marginTop: '15px', fontWeight: '600', color: '#667eea' }}
               dangerouslySetInnerHTML={{
                 __html: t.executionNote.replace(
+                  /\*\*(.*?)\*\*/g,
+                  '<strong>$1</strong>'
+                ),
+              }}
+            />
+            <p
+              style={{ marginTop: '10px', color: '#4b5563' }}
+              dangerouslySetInnerHTML={{
+                __html: t.addressTxNote.replace(
                   /\*\*(.*?)\*\*/g,
                   '<strong>$1</strong>'
                 ),

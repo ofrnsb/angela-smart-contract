@@ -252,6 +252,8 @@ function AppPRD() {
     setShowContractModal(false);
 
     const steps = [];
+    let createdContractHash = null;
+    let createdTxHash = null;
 
     if (isInterbank) {
       // Interbank transfer flow
@@ -261,8 +263,12 @@ function AppPRD() {
         description: `${fromAcc.bank} memverifikasi rekening asal dan tujuan`,
         status: 'processing',
         node: `Node ${fromAcc.bank}`,
+        details: [
+          'Cek format nomor rekening dan keberadaan rekening.',
+          'Pastikan rekening tidak diblokir atau dibekukan.'
+        ],
       });
-      await delay(800);
+      await delay(1500);
       setFlowSteps([...steps]);
 
       steps[0].status = 'completed';
@@ -272,8 +278,12 @@ function AppPRD() {
         description: `${fromAcc.bank} memverifikasi saldo rekening ${fromAcc.accountNumber}`,
         status: 'processing',
         node: `Node ${fromAcc.bank}`,
+        details: [
+          'Hitung saldo tersedia vs. saldo tertahan (hold).',
+          'Validasi limit transfer harian dan fee (bila ada).'
+        ],
       });
-      await delay(600);
+      await delay(1200);
       setFlowSteps([...steps]);
 
       steps[1].status = 'completed';
@@ -283,8 +293,12 @@ function AppPRD() {
         description: 'Mengirim proposal transfer ke jaringan',
         status: 'processing',
         node: 'Interbank Network',
+        details: [
+          'Bank pengirim menyiarkan payload (rek. asal/tujuan, jumlah, timestamp).',
+          'Jaringan menerima proposal untuk divalidasi oleh para node validator.'
+        ],
       });
-      await delay(1000);
+      await delay(2000);
       setFlowSteps([...steps]);
 
       steps[2].status = 'completed';
@@ -294,8 +308,12 @@ function AppPRD() {
         description: `${fromAcc.bank} memverifikasi transaksi`,
         status: 'processing',
         node: `Node ${fromAcc.bank}`,
+        details: [
+          'Node bank asal mengecek keabsahan payload.',
+          'Memberikan tanda tangan persetujuan (signature).'
+        ],
       });
-      await delay(1200);
+      await delay(1800);
       setFlowSteps([...steps]);
 
       steps[3].status = 'completed';
@@ -305,8 +323,12 @@ function AppPRD() {
         description: `${toAcc.bank} memverifikasi transaksi`,
         status: 'processing',
         node: `Node ${toAcc.bank}`,
+        details: [
+          'Node bank tujuan mengecek keabsahan payload.',
+          'Memberikan tanda tangan persetujuan (signature).'
+        ],
       });
-      await delay(1200);
+      await delay(1800);
       setFlowSteps([...steps]);
 
       steps[4].status = 'completed';
@@ -316,28 +338,53 @@ function AppPRD() {
         description: 'Node Regulator memverifikasi dan menyetujui transaksi',
         status: 'processing',
         node: 'Node Regulator',
+        details: [
+          'Pengecekan kepatuhan (mis. threshold, AML/CTF sederhana).',
+          'Memberikan persetujuan akhir sebelum commit.'
+        ],
       });
-      await delay(1000);
+      await delay(1500);
       setFlowSteps([...steps]);
 
       steps[5].status = 'completed';
+      // Eksekusi Smart Contract & pembuatan ID
       steps.push({
         step: 7,
+        title: 'Eksekusi Smart Contract',
+        description: 'Menjalankan fungsi proposeTransfer untuk commit transaksi ke blockchain',
+        status: 'processing',
+        node: 'Blockchain',
+        details: [
+          'Kontrak dieksekusi setelah persetujuan mayoritas terpenuhi.',
+          'Alamat Smart Contract dan ID Transaksi dibuat pada tahap ini.'
+        ],
+      });
+      createdContractHash = generateContractHash();
+      createdTxHash = generateTransactionHash();
+      await delay(1800);
+      setFlowSteps([...steps]);
+
+      steps[6].status = 'completed';
+      steps.push({
+        step: 8,
         title: 'Update Saldo',
         description: `${fromAcc.bank} dan ${toAcc.bank} memperbarui saldo rekening`,
         status: 'processing',
         node: `Node ${fromAcc.bank} & ${toAcc.bank}`,
+        details: [
+          'Saldo rekening pengirim dikurangi dan penerima ditambah.',
+          'Ledger internal bank diperbarui sesuai hasil eksekusi kontrak.'
+        ],
       });
-      await delay(800);
+      await delay(1200);
       setFlowSteps([...steps]);
 
-      steps[6].status = 'completed';
+      steps[7].status = 'completed';
 
       // Set smart contract data with real hash
-      const contractHash = generateContractHash();
       setSmartContractData({
         contractName: 'InterbankSettlement',
-        contractAddress: contractHash,
+        contractAddress: createdContractHash || generateContractHash(),
         function: 'proposeTransfer',
         parameters: {
           fromAccount: fromAcc.accountNumber,
@@ -356,7 +403,7 @@ function AppPRD() {
           requestId: Math.floor(Math.random() * 10000),
           status: 'Settled',
           executionTime: '4.6 detik',
-          transactionHash: generateTransactionHash(),
+          transactionHash: createdTxHash || generateTransactionHash(),
         },
       });
     } else {
@@ -367,8 +414,12 @@ function AppPRD() {
         description: `${fromAcc.bank} memverifikasi rekening asal dan tujuan`,
         status: 'processing',
         node: `Node ${fromAcc.bank}`,
+        details: [
+          'Cek format nomor rekening dan keberadaan rekening.',
+          'Pastikan rekening tidak diblokir atau dibekukan.'
+        ],
       });
-      await delay(600);
+      await delay(1200);
       setFlowSteps([...steps]);
 
       steps[0].status = 'completed';
@@ -378,8 +429,12 @@ function AppPRD() {
         description: `${fromAcc.bank} memverifikasi saldo rekening ${fromAcc.accountNumber}`,
         status: 'processing',
         node: `Node ${fromAcc.bank}`,
+        details: [
+          'Hitung saldo tersedia vs. saldo tertahan (hold).',
+          'Validasi limit transfer harian dan fee (bila ada).'
+        ],
       });
-      await delay(500);
+      await delay(1200);
       setFlowSteps([...steps]);
 
       steps[1].status = 'completed';
@@ -389,28 +444,53 @@ function AppPRD() {
         description: `${fromAcc.bank} memproses transfer antar rekening`,
         status: 'processing',
         node: `Node ${fromAcc.bank}`,
+        details: [
+          'Mempersiapkan data transfer internal antar rekening.',
+          'Validasi akhir sebelum commit.'
+        ],
       });
-      await delay(800);
+      await delay(1500);
       setFlowSteps([...steps]);
 
       steps[2].status = 'completed';
+      // Eksekusi Smart Contract & pembuatan ID
       steps.push({
         step: 4,
+        title: 'Eksekusi Smart Contract',
+        description: 'Menjalankan fungsi transferInternal pada blockchain',
+        status: 'processing',
+        node: 'Blockchain',
+        details: [
+          'Kontrak dieksekusi untuk mencatat transfer internal.',
+          'Alamat Smart Contract dan ID Transaksi dibuat pada tahap ini.'
+        ],
+      });
+      createdContractHash = generateContractHash();
+      createdTxHash = generateTransactionHash();
+      await delay(1500);
+      setFlowSteps([...steps]);
+
+      steps[3].status = 'completed';
+      steps.push({
+        step: 5,
         title: 'Update Saldo',
         description: `${fromAcc.bank} memperbarui saldo rekening asal dan tujuan`,
         status: 'processing',
         node: `Node ${fromAcc.bank}`,
+        details: [
+          'Saldo rekening pengirim dikurangi dan penerima ditambah.',
+          'Ledger internal bank diperbarui sesuai hasil eksekusi kontrak.'
+        ],
       });
-      await delay(600);
+      await delay(1200);
       setFlowSteps([...steps]);
 
-      steps[3].status = 'completed';
+      steps[4].status = 'completed';
 
       // Set smart contract data with real hash
-      const contractHash = generateContractHash();
       setSmartContractData({
         contractName: 'BankTransfer',
-        contractAddress: contractHash,
+        contractAddress: createdContractHash || generateContractHash(),
         function: 'transferInternal',
         parameters: {
           fromAccount: fromAcc.accountNumber,
@@ -422,7 +502,7 @@ function AppPRD() {
         result: {
           status: 'Success',
           executionTime: '2.5 detik',
-          transactionHash: generateTransactionHash(),
+          transactionHash: createdTxHash || generateTransactionHash(),
         },
       });
     }
@@ -458,6 +538,8 @@ function AppPRD() {
     setShowContractModal(false);
 
     const steps = [];
+    let createdContractHash = null;
+    let createdTxHash = null;
 
     steps.push({
       step: 1,
@@ -465,8 +547,12 @@ function AppPRD() {
       description: `${buyerAcc.bank} memverifikasi rekening ${buyerAcc.accountNumber}`,
       status: 'processing',
       node: `Node ${buyerAcc.bank}`,
+      details: [
+        'Cek status rekening dan hak akses.',
+        'Validasi data akun untuk pembayaran.'
+      ],
     });
-    await delay(600);
+    await delay(1200);
     setFlowSteps([...steps]);
 
     steps[0].status = 'completed';
@@ -476,8 +562,12 @@ function AppPRD() {
       description: `${buyerAcc.bank} memverifikasi saldo untuk pembayaran`,
       status: 'processing',
       node: `Node ${buyerAcc.bank}`,
+      details: [
+        'Pastikan saldo cukup untuk harga produk.',
+        'Validasi batas pembayaran dan biaya.'
+      ],
     });
-    await delay(500);
+    await delay(1200);
     setFlowSteps([...steps]);
 
     steps[1].status = 'completed';
@@ -487,8 +577,12 @@ function AppPRD() {
       description: 'Mengunci dana pembayaran',
       status: 'processing',
       node: 'Escrow Node',
+      details: [
+        'Dana pembeli di-hold sementara untuk keamanan.',
+        'Mencegah double-spend saat proses fulfillment.'
+      ],
     });
-    await delay(800);
+    await delay(1600);
     setFlowSteps([...steps]);
 
     steps[2].status = 'completed';
@@ -498,8 +592,12 @@ function AppPRD() {
       description: `Mengirim notifikasi ke ${product.provider}`,
       status: 'processing',
       node: `Node ${product.provider}`,
+      details: [
+        'Provider menerima order dan metadata.',
+        'Sistem provider memulai proses pemenuhan (fulfillment).'
+      ],
     });
-    await delay(1000);
+    await delay(1800);
     setFlowSteps([...steps]);
 
     steps[3].status = 'completed';
@@ -509,8 +607,12 @@ function AppPRD() {
       description: `${product.provider} memproses pesanan`,
       status: 'processing',
       node: `Node ${product.provider}`,
+      details: [
+        'Provider menyiapkan produk/layanan (contoh: token/kode).',
+        'Hasil siap dikirim setelah verifikasi internal.'
+      ],
     });
-    await delay(1200);
+    await delay(1600);
     setFlowSteps([...steps]);
 
     steps[4].status = 'completed';
@@ -520,22 +622,48 @@ function AppPRD() {
       description: `Melepaskan pembayaran ke ${product.provider}`,
       status: 'processing',
       node: `Node ${product.provider}`,
+      details: [
+        'Dana escrow dirilis ke provider setelah fulfillment OK.',
+        'Transaksi siap dicatat permanen.'
+      ],
     });
-    await delay(800);
+    await delay(1400);
     setFlowSteps([...steps]);
 
     steps[5].status = 'completed';
+    // Eksekusi Smart Contract & pembuatan ID
     steps.push({
       step: 7,
+      title: 'Eksekusi Smart Contract',
+      description: 'Menjalankan fungsi createPurchase untuk mencatat transaksi di blockchain',
+      status: 'processing',
+      node: 'Blockchain',
+      details: [
+        'Kontrak dieksekusi untuk mencatat pembelian.',
+        'Alamat Smart Contract dan ID Transaksi dibuat pada tahap ini.'
+      ],
+    });
+    createdContractHash = generateContractHash();
+    createdTxHash = generateTransactionHash();
+    await delay(1500);
+    setFlowSteps([...steps]);
+
+    steps[6].status = 'completed';
+    steps.push({
+      step: 8,
       title: 'Update Saldo',
       description: `${buyerAcc.bank} memperbarui saldo rekening`,
       status: 'processing',
       node: `Node ${buyerAcc.bank}`,
+      details: [
+        'Saldo rekening pembeli dikurangi sesuai harga produk.',
+        'Ledger internal bank diperbarui sesuai hasil eksekusi kontrak.'
+      ],
     });
-    await delay(600);
+    await delay(1200);
     setFlowSteps([...steps]);
 
-    steps[6].status = 'completed';
+    steps[7].status = 'completed';
 
     // Update balance
     const updatedAccounts = { ...accounts };
@@ -543,10 +671,9 @@ function AppPRD() {
     saveAccounts(updatedAccounts);
 
     // Set smart contract data with real hash
-    const contractHash = generateContractHash();
     setSmartContractData({
       contractName: 'PurchaseProcessor',
-      contractAddress: contractHash,
+      contractAddress: createdContractHash || generateContractHash(),
       function: 'createPurchase',
       parameters: {
         buyerAccount: buyerAcc.accountNumber,
@@ -560,7 +687,7 @@ function AppPRD() {
         orderId: Math.floor(Math.random() * 10000),
         status: 'Fulfilled',
         executionTime: '5.5 detik',
-        transactionHash: generateTransactionHash(),
+        transactionHash: createdTxHash || generateTransactionHash(),
       },
     });
 
@@ -1209,6 +1336,20 @@ function AppPRD() {
                     >
                       {step.description}
                     </p>
+                    {Array.isArray(step.details) && step.details.length > 0 && (
+                      <ul
+                        style={{
+                          margin: '8px 0 0 18px',
+                          color: '#4a5568',
+                          fontSize: '13px',
+                          lineHeight: '1.5',
+                        }}
+                      >
+                        {step.details.map((d, i) => (
+                          <li key={i}>{d}</li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 </div>
               ))}

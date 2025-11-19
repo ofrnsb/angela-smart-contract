@@ -1,62 +1,121 @@
-# Quick Setup GitHub Pages
+# GitHub Pages Deployment - Setup Instructions
 
-## 🚀 Langkah Cepat (5 Menit)
+## Status Deployment
 
-### 1. Update Base Path
+✅ **Semua file sudah di-push ke GitHub**
+✅ **GitHub Actions workflow sudah dikonfigurasi**
+✅ **Frontend sudah di-build dan siap deploy**
 
-Edit file `frontend/vite.config.js`, ubah baris ini:
+## Langkah Terakhir (Sekali Saja)
 
-```javascript
-base: process.env.NODE_ENV === 'production' ? '/NAMA_REPO_ANDA/' : '/',
-```
+### 1. Aktifkan GitHub Pages di Repository Settings
 
-**Ganti `NAMA_REPO_ANDA` dengan nama repository GitHub Anda.**
-
-**Contoh:**
-- Jika repo name: `angela-smart-contract` → `'/angela-smart-contract/'`
-- Jika deploy ke root (username.github.io) → `'/'`
-
-### 2. Push ke GitHub
-
-```bash
-git add .
-git commit -m "Setup for GitHub Pages"
-git push origin main
-```
-
-### 3. Aktifkan GitHub Pages
-
-1. Buka repository di GitHub
-2. Klik **Settings** → **Pages**
-3. Di bagian **Source**, pilih **GitHub Actions**
+1. Buka repository di GitHub: https://github.com/ofrnsb/angela-smart-contract
+2. Klik **Settings** → **Pages** (di sidebar kiri)
+3. Di bagian **Source**, pilih:
+   - **Source**: `GitHub Actions`
 4. Klik **Save**
 
-### 4. Tunggu Deployment
+### 2. Verifikasi Deployment
 
+Setelah push terakhir, GitHub Actions akan otomatis:
+1. Build frontend (npm ci → npm run build)
+2. Upload artifact (frontend/dist)
+3. Deploy ke GitHub Pages
+
+**Cek status deployment:**
 - Buka tab **Actions** di repository
-- Tunggu workflow "Deploy to GitHub Pages" selesai (2-3 menit)
-- Setelah selesai, aplikasi akan tersedia di:
-  `https://USERNAME.github.io/NAMA_REPO/`
+- Lihat workflow "Deploy to GitHub Pages"
+- Tunggu sampai selesai (biasanya 2-3 menit)
 
-## ✅ Selesai!
+### 3. Akses Aplikasi
 
-Aplikasi sudah online di GitHub Pages! 🎉
+Setelah deployment selesai, aplikasi akan tersedia di:
+**https://ofrnsb.github.io/angela-smart-contract/**
 
----
+## Catatan Penting
 
-## 📝 Catatan
+### Untuk Full Functionality
 
-- Setiap push ke `main` branch akan otomatis trigger deployment
-- Pastikan base path sudah benar, jika tidak asset tidak akan ter-load
-- Untuk melihat halaman penjelasan, klik tombol **"📚 Penjelasan Smart Contract"** di aplikasi
+Aplikasi di GitHub Pages adalah **read-only demo**. Untuk full functionality (transaksi, role switching, dll):
 
-## 🔧 Troubleshooting
+1. **Clone repository:**
+   ```bash
+   git clone https://github.com/ofrnsb/angela-smart-contract.git
+   cd angela-smart-contract
+   ```
 
-**Blank page?**
-- Pastikan base path di `vite.config.js` sesuai nama repo
-- Clear browser cache (Ctrl+Shift+R)
+2. **Install dependencies:**
+   ```bash
+   npm install
+   cd frontend && npm install && cd ..
+   ```
 
-**GitHub Actions gagal?**
-- Pastikan file `.github/workflows/deploy.yml` ada
-- Check error di tab Actions
+3. **Start Hardhat node:**
+   ```bash
+   npm run node
+   ```
 
+4. **Deploy contracts (terminal baru):**
+   ```bash
+   npm run deploy:prd
+   ```
+   **Update contract addresses** di `scripts/seedPRD.js` dan `frontend/src/AppPRD.jsx`
+
+5. **Seed data:**
+   ```bash
+   npm run seed:prd
+   ```
+
+6. **Start frontend:**
+   ```bash
+   cd frontend && npm run dev
+   ```
+
+7. **Akses:** http://localhost:3000
+
+## Troubleshooting
+
+### GitHub Actions Gagal
+
+1. **Cek logs** di tab Actions
+2. **Pastikan** `frontend/package-lock.json` ada (sudah ada)
+3. **Pastikan** Node.js version 18 (sudah dikonfigurasi)
+
+### Halaman Kosong di GitHub Pages
+
+1. **Cek base path** di `frontend/vite.config.js`:
+   ```js
+   base: process.env.NODE_ENV === 'production' ? '/angela-smart-contract/' : '/',
+   ```
+   Pastikan sesuai dengan nama repository.
+
+2. **Cek console browser** untuk error JavaScript
+
+### Contract Addresses Tidak Valid
+
+- Di GitHub Pages, contract addresses adalah placeholder
+- Untuk testing, gunakan local deployment (lihat langkah di atas)
+
+## Manual Deployment (Opsional)
+
+Jika GitHub Actions tidak berjalan, bisa deploy manual:
+
+```bash
+cd frontend
+npm install
+npm run build
+npx gh-pages -d dist
+```
+
+Tapi lebih baik gunakan GitHub Actions (otomatis setiap push).
+
+## Status Saat Ini
+
+✅ Frontend menggunakan AppPRD (PRD implementation)
+✅ Build berhasil (dist/ folder sudah dibuat)
+✅ GitHub Actions workflow sudah dikonfigurasi
+✅ Base path sudah benar (/angela-smart-contract/)
+✅ Semua perubahan sudah di-push
+
+**Tinggal aktifkan GitHub Pages di Settings → Pages → Source: GitHub Actions**

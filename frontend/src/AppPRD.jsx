@@ -114,7 +114,9 @@ function AppPRD() {
         const signer = await provider.getSigner();
         setSigner(signer);
       } else {
-        // Fallback to localhost for demo
+        // For GitHub Pages demo: show message that local node is required
+        console.warn("MetaMask not found. For full functionality, connect to local Hardhat node.");
+        // Still create a provider for read-only operations
         const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
         setProvider(provider);
       }

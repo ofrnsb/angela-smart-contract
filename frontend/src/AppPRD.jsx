@@ -176,10 +176,10 @@ function AppPRD() {
       steps[2].status = 'completed';
       steps.push({ 
         step: 4, 
-        title: 'Validasi Node 1', 
-        description: 'Validator 1 memverifikasi transaksi',
+        title: 'Validasi Bank Asal', 
+        description: 'Node Bank Asal memverifikasi transaksi',
         status: 'processing',
-        node: 'Validator Node 1'
+        node: 'Node Bank Asal'
       });
       await delay(1200);
       setFlowSteps([...steps]);
@@ -187,10 +187,10 @@ function AppPRD() {
       steps[3].status = 'completed';
       steps.push({ 
         step: 5, 
-        title: 'Validasi Node 2', 
-        description: 'Validator 2 memverifikasi transaksi',
+        title: 'Validasi Bank Tujuan', 
+        description: 'Node Bank Tujuan memverifikasi transaksi',
         status: 'processing',
-        node: 'Validator Node 2'
+        node: 'Node Bank Tujuan'
       });
       await delay(1200);
       setFlowSteps([...steps]);
@@ -198,10 +198,10 @@ function AppPRD() {
       steps[4].status = 'completed';
       steps.push({ 
         step: 6, 
-        title: 'Settlement', 
-        description: 'Menyelesaikan transfer antar bank',
+        title: 'Validasi Regulator', 
+        description: 'Node Regulator memverifikasi dan menyetujui transaksi',
         status: 'processing',
-        node: 'Settlement Node'
+        node: 'Node Regulator'
       });
       await delay(1000);
       setFlowSteps([...steps]);
@@ -230,7 +230,7 @@ function AppPRD() {
           toAccount: toAcc.accountNumber,
           amount: `Rp ${parseFloat(amount).toLocaleString('id-ID')}`,
           proposerBank: fromAcc.bank,
-          validators: ['Validator Node 1', 'Validator Node 2'],
+          validators: ['Node Bank Asal', 'Node Bank Tujuan', 'Node Regulator'],
           approvalThreshold: '2 dari 2',
           timestamp: new Date().toISOString()
         },
@@ -248,7 +248,7 @@ function AppPRD() {
         title: 'Validasi Rekening', 
         description: 'Memverifikasi rekening asal dan tujuan',
         status: 'processing',
-        node: 'Bank Internal Node'
+        node: 'Node Bank'
       });
       await delay(600);
       setFlowSteps([...steps]);
@@ -259,7 +259,7 @@ function AppPRD() {
         title: 'Cek Saldo', 
         description: `Memverifikasi saldo rekening ${fromAcc.accountNumber}`,
         status: 'processing',
-        node: 'Bank Internal Node'
+        node: 'Node Bank'
       });
       await delay(500);
       setFlowSteps([...steps]);
@@ -270,7 +270,7 @@ function AppPRD() {
         title: 'Eksekusi Transfer', 
         description: 'Memproses transfer antar rekening',
         status: 'processing',
-        node: 'Bank Internal Node'
+        node: 'Node Bank'
       });
       await delay(800);
       setFlowSteps([...steps]);
@@ -281,7 +281,7 @@ function AppPRD() {
         title: 'Update Saldo', 
         description: 'Memperbarui saldo rekening asal dan tujuan',
         status: 'processing',
-        node: 'Database Node'
+        node: 'Node Bank'
       });
       await delay(600);
       setFlowSteps([...steps]);
@@ -802,64 +802,59 @@ function AppPRD() {
               </button>
             </div>
             <div style={{ marginTop: '15px' }}>
-              <div style={{ marginBottom: '20px' }}>
-                <strong style={{ fontSize: '14px', color: '#666' }}>Contract Name:</strong>
-                <div style={{ marginTop: '5px', fontSize: '16px', fontWeight: 'bold' }}>{smartContractData.contractName}</div>
+              <div style={{ marginBottom: '25px', textAlign: 'center' }}>
+                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1976D2', marginBottom: '10px' }}>
+                  Smart Contract yang Dieksekusi
+                </div>
+                <div style={{ fontSize: '14px', color: '#666' }}>
+                  Transaksi Anda telah diproses dan tercatat di blockchain
+                </div>
               </div>
+              
               <div style={{ marginBottom: '20px' }}>
-                <strong style={{ fontSize: '14px', color: '#666' }}>Contract Address:</strong>
+                <strong style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '8px' }}>Alamat Smart Contract:</strong>
                 <div style={{ 
-                  marginTop: '5px', 
                   padding: '12px', 
                   background: '#f8f9fa', 
                   borderRadius: '8px',
                   fontFamily: 'monospace',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   wordBreak: 'break-all',
-                  border: '1px solid #e0e0e0'
+                  border: '1px solid #e0e0e0',
+                  color: '#333'
                 }}>
                   {smartContractData.contractAddress}
                 </div>
               </div>
+              
               {smartContractData.result.transactionHash && (
                 <div style={{ marginBottom: '20px' }}>
-                  <strong style={{ fontSize: '14px', color: '#666' }}>Transaction Hash:</strong>
+                  <strong style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '8px' }}>ID Transaksi:</strong>
                   <div style={{ 
-                    marginTop: '5px', 
                     padding: '12px', 
                     background: '#f8f9fa', 
                     borderRadius: '8px',
                     fontFamily: 'monospace',
-                    fontSize: '14px',
+                    fontSize: '13px',
                     wordBreak: 'break-all',
-                    border: '1px solid #e0e0e0'
+                    border: '1px solid #e0e0e0',
+                    color: '#333'
                   }}>
                     {smartContractData.result.transactionHash}
                   </div>
                 </div>
               )}
-              <div style={{ marginBottom: '20px' }}>
-                <strong style={{ fontSize: '14px', color: '#666' }}>Function:</strong>
-                <div style={{ marginTop: '5px', fontSize: '16px' }}>{smartContractData.function}</div>
-              </div>
-              <div style={{ marginBottom: '20px' }}>
-                <strong style={{ fontSize: '14px', color: '#666' }}>Parameters:</strong>
-                <div style={{ marginLeft: '20px', marginTop: '10px', background: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-                  {Object.entries(smartContractData.parameters).map(([key, value]) => (
-                    <div key={key} style={{ marginBottom: '8px', fontSize: '14px' }}>
-                      <strong>{key}:</strong> {value}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div style={{ marginBottom: '20px' }}>
-                <strong style={{ fontSize: '14px', color: '#666' }}>Result:</strong>
-                <div style={{ marginLeft: '20px', marginTop: '10px', background: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-                  {Object.entries(smartContractData.result).filter(([key]) => key !== 'transactionHash').map(([key, value]) => (
-                    <div key={key} style={{ marginBottom: '8px', fontSize: '14px' }}>
-                      <strong>{key}:</strong> {value}
-                    </div>
-                  ))}
+              
+              <div style={{ 
+                marginTop: '25px', 
+                padding: '15px', 
+                background: '#e7f3ff', 
+                borderRadius: '8px',
+                border: '1px solid #2196F3'
+              }}>
+                <div style={{ fontSize: '14px', color: '#1565C0', lineHeight: '1.6' }}>
+                  <strong>Informasi:</strong> Setiap transaksi menggunakan smart contract yang terenkripsi dan tersimpan permanen di blockchain. 
+                  Alamat dan ID transaksi di atas dapat digunakan untuk memverifikasi transaksi Anda.
                 </div>
               </div>
             </div>

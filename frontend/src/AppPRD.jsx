@@ -183,7 +183,8 @@ function AppPRD() {
   });
   
   // Loading and flow states
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isTransferProcessing, setIsTransferProcessing] = useState(false);
+  const [isPurchaseProcessing, setIsPurchaseProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState('');
   const [flowSteps, setFlowSteps] = useState([]);
   const [smartContractData, setSmartContractData] = useState(null);
@@ -207,7 +208,7 @@ function AppPRD() {
   };
 
   const simulateTransferFlow = async (fromAcc, toAcc, amount, isInterbank) => {
-    setIsProcessing(true);
+    setIsTransferProcessing(true);
     setFlowSteps([]);
     setSmartContractData(null);
     setTransactionResult(null);
@@ -399,16 +400,18 @@ function AppPRD() {
       toBalance: updatedAccounts[toAcc.accountNumber].balance
     });
     
-    setIsProcessing(false);
+    setIsTransferProcessing(false);
     setShowFlowModal(false);
     setShowContractModal(true);
   };
 
   const simulatePurchaseFlow = async (buyerAcc, product) => {
-    setIsProcessing(true);
+    setIsPurchaseProcessing(true);
     setFlowSteps([]);
     setSmartContractData(null);
     setTransactionResult(null);
+    setShowFlowModal(true);
+    setShowContractModal(false);
 
     const steps = [];
     
@@ -523,7 +526,7 @@ function AppPRD() {
       remainingBalance: updatedAccounts[buyerAcc.accountNumber].balance
     });
     
-    setIsProcessing(false);
+    setIsPurchaseProcessing(false);
     setShowFlowModal(false);
     setShowContractModal(true);
   };
@@ -613,31 +616,6 @@ function AppPRD() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
         <h1 style={{ margin: 0 }}>{t.title}</h1>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button
-            onClick={() => setLanguage(language === 'id' ? 'en' : 'id')}
-            style={{ 
-              background: '#f0f0f0', 
-              color: '#333', 
-              border: '1px solid #ddd', 
-              padding: '6px 12px', 
-              borderRadius: '6px', 
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: '500',
-              transition: 'all 0.2s',
-              minWidth: '40px'
-            }}
-            onMouseOver={(e) => {
-              e.target.style.background = '#e0e0e0';
-              e.target.style.borderColor = '#bbb';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.background = '#f0f0f0';
-              e.target.style.borderColor = '#ddd';
-            }}
-          >
-            {language === 'id' ? 'EN' : 'ID'}
-          </button>
           <button 
             onClick={() => setShowAboutPage(true)}
             style={{ 
@@ -663,6 +641,32 @@ function AppPRD() {
             }}
           >
             {t.aboutButton}
+          </button>
+          <button
+            onClick={() => setLanguage(language === 'id' ? 'en' : 'id')}
+            style={{ 
+              background: '#f0f0f0', 
+              color: '#333', 
+              border: '1px solid #ddd', 
+              padding: '6px 12px', 
+              borderRadius: '6px', 
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: '500',
+              transition: 'all 0.2s',
+              width: 'auto',
+              whiteSpace: 'nowrap'
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = '#e0e0e0';
+              e.target.style.borderColor = '#bbb';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = '#f0f0f0';
+              e.target.style.borderColor = '#ddd';
+            }}
+          >
+            {language === 'id' ? 'EN' : 'ID'}
           </button>
         </div>
       </div>
@@ -696,15 +700,15 @@ function AppPRD() {
           <select
             value={transferForm.fromAccount}
             onChange={(e) => setTransferForm({ ...transferForm, fromAccount: e.target.value })}
-            disabled={isProcessing}
+            disabled={isTransferProcessing || isPurchaseProcessing}
             style={{ 
               width: '100%', 
               padding: '14px', 
               border: '2px solid #e0e0e0', 
               borderRadius: '8px',
               fontSize: '15px',
-              backgroundColor: isProcessing ? '#f5f5f5' : 'white',
-              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              backgroundColor: (isTransferProcessing || isPurchaseProcessing) ? '#f5f5f5' : 'white',
+              cursor: (isTransferProcessing || isPurchaseProcessing) ? 'not-allowed' : 'pointer',
               appearance: 'none',
               backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
               backgroundRepeat: 'no-repeat',
@@ -726,15 +730,15 @@ function AppPRD() {
           <select
             value={transferForm.toAccount}
             onChange={(e) => setTransferForm({ ...transferForm, toAccount: e.target.value })}
-            disabled={isProcessing}
+            disabled={isTransferProcessing || isPurchaseProcessing}
             style={{ 
               width: '100%', 
               padding: '14px', 
               border: '2px solid #e0e0e0', 
               borderRadius: '8px',
               fontSize: '15px',
-              backgroundColor: isProcessing ? '#f5f5f5' : 'white',
-              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              backgroundColor: (isTransferProcessing || isPurchaseProcessing) ? '#f5f5f5' : 'white',
+              cursor: (isTransferProcessing || isPurchaseProcessing) ? 'not-allowed' : 'pointer',
               appearance: 'none',
               backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
               backgroundRepeat: 'no-repeat',
@@ -762,7 +766,7 @@ function AppPRD() {
             placeholder="0"
             step="1000"
             min="0"
-            disabled={isProcessing}
+            disabled={isTransferProcessing || isPurchaseProcessing}
             style={{ width: '100%', padding: '14px', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '15px' }}
           />
         </div>
@@ -773,23 +777,23 @@ function AppPRD() {
             value={transferForm.memo}
             onChange={(e) => setTransferForm({ ...transferForm, memo: e.target.value })}
             placeholder={t.memoPlaceholder}
-            disabled={isProcessing}
+            disabled={isTransferProcessing || isPurchaseProcessing}
             style={{ width: '100%', padding: '14px', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '15px' }}
           />
         </div>
         <button 
           onClick={handleTransfer}
-          disabled={isProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount}
+          disabled={isTransferProcessing || isPurchaseProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount}
           style={{ 
             width: '100%',
             marginTop: '8px',
-            opacity: (isProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) ? 0.5 : 1,
-            background: (isProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) 
+            opacity: (isTransferProcessing || isPurchaseProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) ? 0.5 : 1,
+            background: (isTransferProcessing || isPurchaseProcessing || !transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) 
               ? 'linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%)' 
               : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
           }}
         >
-          {isProcessing ? t.processing : t.submitTransfer}
+          {isTransferProcessing ? t.processing : t.submitTransfer}
         </button>
       </div>
 
@@ -810,15 +814,15 @@ function AppPRD() {
           <select
             value={purchaseForm.buyerAccount}
             onChange={(e) => setPurchaseForm({ ...purchaseForm, buyerAccount: e.target.value })}
-            disabled={isProcessing}
+            disabled={isTransferProcessing || isPurchaseProcessing}
             style={{ 
               width: '100%', 
               padding: '14px', 
               border: '2px solid #e0e0e0', 
               borderRadius: '8px',
               fontSize: '15px',
-              backgroundColor: isProcessing ? '#f5f5f5' : 'white',
-              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              backgroundColor: (isTransferProcessing || isPurchaseProcessing) ? '#f5f5f5' : 'white',
+              cursor: (isTransferProcessing || isPurchaseProcessing) ? 'not-allowed' : 'pointer',
               appearance: 'none',
               backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
               backgroundRepeat: 'no-repeat',
@@ -840,15 +844,15 @@ function AppPRD() {
           <select
             value={purchaseForm.productId}
             onChange={(e) => setPurchaseForm({ ...purchaseForm, productId: e.target.value })}
-            disabled={isProcessing}
+            disabled={isTransferProcessing || isPurchaseProcessing}
             style={{ 
               width: '100%', 
               padding: '14px', 
               border: '2px solid #e0e0e0', 
               borderRadius: '8px',
               fontSize: '15px',
-              backgroundColor: isProcessing ? '#f5f5f5' : 'white',
-              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              backgroundColor: (isTransferProcessing || isPurchaseProcessing) ? '#f5f5f5' : 'white',
+              cursor: (isTransferProcessing || isPurchaseProcessing) ? 'not-allowed' : 'pointer',
               appearance: 'none',
               backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
               backgroundRepeat: 'no-repeat',
@@ -867,22 +871,22 @@ function AppPRD() {
         </div>
         <button 
           onClick={handlePurchase}
-          disabled={isProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId}
+          disabled={isTransferProcessing || isPurchaseProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId}
           style={{ 
             width: '100%',
             marginTop: '8px',
-            opacity: (isProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId) ? 0.5 : 1,
-            background: (isProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId) 
+            opacity: (isTransferProcessing || isPurchaseProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId) ? 0.5 : 1,
+            background: (isTransferProcessing || isPurchaseProcessing || !purchaseForm.buyerAccount || !purchaseForm.productId) 
               ? 'linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%)' 
               : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
           }}
         >
-          {isProcessing ? t.processing : t.buyNow}
+          {isPurchaseProcessing ? t.processing : t.buyNow}
         </button>
       </div>
 
       {/* Processing Flow Modal */}
-      {showFlowModal && isProcessing && (
+      {showFlowModal && (isTransferProcessing || isPurchaseProcessing) && (
         <div 
           style={{
             position: 'fixed',
@@ -1024,13 +1028,19 @@ function AppPRD() {
                   borderRadius: '50%',
                   width: '32px',
                   height: '32px',
+                  minWidth: '32px',
+                  minHeight: '32px',
+                  padding: 0,
+                  margin: 0,
                   cursor: 'pointer',
-                  fontSize: '20px',
+                  fontSize: '24px',
+                  lineHeight: '1',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   transition: 'all 0.2s',
-                  boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
+                  boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+                  fontWeight: '300'
                 }}
                 onMouseOver={(e) => {
                   e.target.style.background = '#dc2626';

@@ -750,13 +750,32 @@ function App() {
       <div className={`tab-content ${activeTab === 'products' ? 'active' : ''}`}>
         <div className="card">
           <h2>Daftar Produk</h2>
+          {!userAccountNumber && (
+            <div style={{ background: '#fff3cd', padding: '15px', borderRadius: '8px', marginBottom: '20px', border: '2px solid #ffc107' }}>
+              <p style={{ margin: 0, color: '#856404' }}>
+                <strong>Peringatan:</strong> Silakan pilih rekening terlebih dahulu di tab "Rekening" untuk melakukan pembelian produk.
+              </p>
+            </div>
+          )}
+          {userAccountNumber && (
+            <div style={{ background: '#d4edda', padding: '15px', borderRadius: '8px', marginBottom: '20px', border: '2px solid #28a745' }}>
+              <p style={{ margin: 0, color: '#155724' }}>
+                <strong>Rekening Aktif:</strong> {accounts[userAccountNumber]?.accountName} - {userAccountNumber} 
+                (Saldo: Rp {accounts[userAccountNumber]?.balance.toLocaleString('id-ID')})
+              </p>
+            </div>
+          )}
           <div className="product-grid">
             {products.map((product) => (
               <div key={product.id} className="product-card">
                 <h4>{product.name}</h4>
                 <p>{product.description}</p>
                 <p className="product-price">Rp {product.price.toLocaleString('id-ID')}</p>
-                <button onClick={() => purchaseProduct(product.id)}>
+                <button 
+                  onClick={() => purchaseProduct(product.id)}
+                  disabled={!userAccountNumber}
+                  style={!userAccountNumber ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                >
                   Beli Sekarang
                 </button>
               </div>

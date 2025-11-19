@@ -535,7 +535,33 @@ function App() {
       <div className="card" style={{ background: '#fff3cd', border: '2px solid #ffc107', marginBottom: '20px' }}>
         <p style={{ margin: 0, color: '#856404' }}>
           <strong>Mode Demo:</strong> Aplikasi ini berjalan dalam mode simulasi untuk pembelajaran. 
-          Tidak memerlukan MetaMask atau koneksi blockchain.
+          Tidak memerlukan MetaMask atau koneksi blockchain. Setiap transaksi akan menampilkan smart contract yang dieksekusi.
+        </p>
+      </div>
+
+      <div className="card">
+        <h2>Daftar Rekening Dummy untuk Simulasi</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '15px', marginTop: '15px' }}>
+          {Object.values(accounts).map((acc) => (
+            <div key={acc.accountNumber} style={{ 
+              padding: '15px', 
+              background: acc.bank === 'BM' ? '#f0f8ff' : '#fff5f5', 
+              border: `2px solid ${acc.bank === 'BM' ? '#4a90e2' : '#e74c3c'}`,
+              borderRadius: '8px'
+            }}>
+              <p style={{ margin: '5px 0', fontWeight: 'bold' }}>{acc.accountName}</p>
+              <p style={{ margin: '5px 0', fontSize: '0.9em', color: '#666' }}>No. Rek: {acc.accountNumber}</p>
+              <p style={{ margin: '5px 0', fontSize: '0.9em', color: '#666' }}>
+                Bank: {acc.bank === 'BM' ? 'Bank Mandiri' : 'Bank BCA'}
+              </p>
+              <p style={{ margin: '5px 0', fontSize: '1.1em', fontWeight: 'bold', color: '#667eea' }}>
+                Saldo: Rp {acc.balance.toLocaleString('id-ID')}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p style={{ marginTop: '15px', fontSize: '0.9em', color: '#666' }}>
+          Gunakan nomor rekening di atas untuk melakukan simulasi transaksi. Setiap transaksi akan menampilkan smart contract yang dieksekusi.
         </p>
       </div>
 

@@ -111,6 +111,8 @@ function AppPRD() {
   const [flowSteps, setFlowSteps] = useState([]);
   const [smartContractData, setSmartContractData] = useState(null);
   const [transactionResult, setTransactionResult] = useState(null);
+  const [showFlowModal, setShowFlowModal] = useState(false);
+  const [showContractModal, setShowContractModal] = useState(false);
 
   // Load accounts from localStorage on mount
   useEffect(() => {
@@ -132,6 +134,8 @@ function AppPRD() {
     setFlowSteps([]);
     setSmartContractData(null);
     setTransactionResult(null);
+    setShowFlowModal(true);
+    setShowContractModal(false);
 
     const steps = [];
     
@@ -215,9 +219,11 @@ function AppPRD() {
       
       steps[6].status = 'completed';
       
-      // Set smart contract data
+      // Set smart contract data with real hash
+      const contractHash = generateContractHash();
       setSmartContractData({
         contractName: 'InterbankSettlement',
+        contractAddress: contractHash,
         function: 'proposeTransfer',
         parameters: {
           fromAccount: fromAcc.accountNumber,
@@ -231,7 +237,8 @@ function AppPRD() {
         result: {
           requestId: Math.floor(Math.random() * 10000),
           status: 'Settled',
-          executionTime: '4.6 detik'
+          executionTime: '4.6 detik',
+          transactionHash: generateTransactionHash()
         }
       });
     } else {
@@ -281,9 +288,11 @@ function AppPRD() {
       
       steps[3].status = 'completed';
       
-      // Set smart contract data
+      // Set smart contract data with real hash
+      const contractHash = generateContractHash();
       setSmartContractData({
         contractName: 'BankTransfer',
+        contractAddress: contractHash,
         function: 'transferInternal',
         parameters: {
           fromAccount: fromAcc.accountNumber,
@@ -294,7 +303,8 @@ function AppPRD() {
         },
         result: {
           status: 'Success',
-          executionTime: '2.5 detik'
+          executionTime: '2.5 detik',
+          transactionHash: generateTransactionHash()
         }
       });
     }
@@ -313,6 +323,8 @@ function AppPRD() {
     });
     
     setIsProcessing(false);
+    setShowFlowModal(false);
+    setShowContractModal(true);
   };
 
   const simulatePurchaseFlow = async (buyerAcc, product) => {
@@ -406,9 +418,11 @@ function AppPRD() {
     updatedAccounts[buyerAcc.accountNumber].balance -= product.price;
     saveAccounts(updatedAccounts);
     
-    // Set smart contract data
+    // Set smart contract data with real hash
+    const contractHash = generateContractHash();
     setSmartContractData({
       contractName: 'PurchaseProcessor',
+      contractAddress: contractHash,
       function: 'createPurchase',
       parameters: {
         buyerAccount: buyerAcc.accountNumber,
@@ -421,7 +435,8 @@ function AppPRD() {
       result: {
         orderId: Math.floor(Math.random() * 10000),
         status: 'Fulfilled',
-        executionTime: '5.5 detik'
+        executionTime: '5.5 detik',
+        transactionHash: generateTransactionHash()
       }
     });
     
@@ -432,9 +447,31 @@ function AppPRD() {
     });
     
     setIsProcessing(false);
+    setShowFlowModal(false);
+    setShowContractModal(true);
   };
 
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // Generate realistic contract hash (64 hex characters)
+  const generateContractHash = () => {
+    const chars = '0123456789abcdef';
+    let hash = '0x';
+    for (let i = 0; i < 64; i++) {
+      hash += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return hash;
+  };
+
+  // Generate realistic transaction hash (64 hex characters)
+  const generateTransactionHash = () => {
+    const chars = '0123456789abcdef';
+    let hash = '0x';
+    for (let i = 0; i < 64; i++) {
+      hash += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return hash;
+  };
 
   const handleTransfer = async () => {
     if (!transferForm.fromAccount || !transferForm.toAccount || !transferForm.amount) {
@@ -627,94 +664,7 @@ function AppPRD() {
         </button>
       </div>
 
-      {/* Processing Flow Visualization */}
-      {isProcessing && (
-        <div className="card" style={{ background: '#f8f9fa', border: '2px solid #667eea' }}>
-          <h2 style={{ color: '#667eea' }}>Memproses Transaksi...</h2>
-          <div style={{ marginTop: '20px' }}>
-            {flowSteps.map((step, idx) => (
-              <div 
-                key={idx} 
-                style={{ 
-                  marginBottom: '15px',
-                  padding: '15px',
-                  background: step.status === 'completed' ? '#d4edda' : step.status === 'processing' ? '#fff3cd' : '#f8f9fa',
-                  border: `2px solid ${step.status === 'completed' ? '#28a745' : step.status === 'processing' ? '#ffc107' : '#e0e0e0'}`,
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '15px'
-                }}
-              >
-                <div style={{ 
-                  width: '40px', 
-                  height: '40px', 
-                  borderRadius: '50%', 
-                  background: step.status === 'completed' ? '#28a745' : step.status === 'processing' ? '#ffc107' : '#e0e0e0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontWeight: 'bold',
-                  flexShrink: 0
-                }}>
-                  {step.status === 'completed' ? '✓' : step.step}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ margin: 0, fontSize: '16px' }}>{step.title}</h3>
-                    <span style={{ 
-                      fontSize: '12px', 
-                      color: '#666',
-                      background: '#e0e0e0',
-                      padding: '4px 8px',
-                      borderRadius: '4px'
-                    }}>
-                      {step.node}
-                    </span>
-                  </div>
-                  <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '14px' }}>{step.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Smart Contract Data */}
-      {smartContractData && !isProcessing && (
-        <div className="card" style={{ background: '#e7f3ff', border: '2px solid #2196F3' }}>
-          <h2 style={{ color: '#1976D2' }}>Data Smart Contract</h2>
-          <div style={{ marginTop: '15px' }}>
-            <div style={{ marginBottom: '15px' }}>
-              <strong>Contract:</strong> {smartContractData.contractName}
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <strong>Function:</strong> {smartContractData.function}
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <strong>Parameters:</strong>
-              <div style={{ marginLeft: '20px', marginTop: '10px', background: 'white', padding: '15px', borderRadius: '8px' }}>
-                {Object.entries(smartContractData.parameters).map(([key, value]) => (
-                  <div key={key} style={{ marginBottom: '8px' }}>
-                    <strong>{key}:</strong> {value}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <strong>Result:</strong>
-              <div style={{ marginLeft: '20px', marginTop: '10px', background: 'white', padding: '15px', borderRadius: '8px' }}>
-                {Object.entries(smartContractData.result).map(([key, value]) => (
-                  <div key={key} style={{ marginBottom: '8px' }}>
-                    <strong>{key}:</strong> {value}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Processing Flow Modal - already defined above */}
 
       {/* Transaction Result */}
       {transactionResult && !isProcessing && (

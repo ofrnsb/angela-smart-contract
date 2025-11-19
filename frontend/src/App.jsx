@@ -100,7 +100,7 @@ function App() {
 
     setAccounts({ ...accounts, [userAccountNumber]: newAccount });
     showAlert('success', 'Rekening berhasil dibuat!');
-    showContractViewer('createAccount', { accountNumber: userAccountNumber, accountName: userAccountName });
+    displayContractViewer('createAccount', { accountNumber: userAccountNumber, accountName: userAccountName });
   };
 
   const deposit = () => {
@@ -124,7 +124,7 @@ function App() {
     updatedAccounts[userAccountNumber].balance += amount;
     setAccounts(updatedAccounts);
     showAlert('success', `Deposit Rp ${parseFloat(depositAmount).toLocaleString('id-ID')} berhasil!`);
-    showContractViewer('deposit', { accountNumber: userAccountNumber, amount: depositAmount });
+    displayContractViewer('deposit', { accountNumber: userAccountNumber, amount: depositAmount });
     setDepositAmount('');
   };
 
@@ -154,7 +154,7 @@ function App() {
     updatedAccounts[userAccountNumber].balance -= amount;
     setAccounts(updatedAccounts);
     showAlert('success', `Penarikan Rp ${parseFloat(withdrawAmount).toLocaleString('id-ID')} berhasil!`);
-    showContractViewer('withdraw', { accountNumber: userAccountNumber, amount: withdrawAmount });
+    displayContractViewer('withdraw', { accountNumber: userAccountNumber, amount: withdrawAmount });
     setWithdrawAmount('');
   };
 
@@ -195,7 +195,7 @@ function App() {
     updatedAccounts[transferForm.toAccount].balance += amount;
     setAccounts(updatedAccounts);
     showAlert('success', `Transfer Rp ${parseFloat(transferForm.amount).toLocaleString('id-ID')} berhasil!`);
-    showContractViewer('transferInternal', {
+    displayContractViewer('transferInternal', {
       fromAccount: userAccountNumber,
       toAccount: transferForm.toAccount,
       amount: transferForm.amount,
@@ -245,7 +245,7 @@ function App() {
     
     setAccounts(updatedAccounts);
     showAlert('success', `Transfer antar bank Rp ${parseFloat(externalTransferForm.amount).toLocaleString('id-ID')} berhasil!`);
-    showContractViewer('transferExternal', {
+    displayContractViewer('transferExternal', {
       fromAccount: userAccountNumber,
       toBankCode: externalTransferForm.toBankCode,
       toAccount: externalTransferForm.toAccount,
@@ -281,7 +281,7 @@ function App() {
     updatedAccounts[userAccountNumber].balance -= product.price;
     setAccounts(updatedAccounts);
     showAlert('success', `Produk ${product.name} berhasil dibeli!`);
-    showContractViewer('purchaseProduct', {
+    displayContractViewer('purchaseProduct', {
       accountNumber: userAccountNumber,
       productId: productId,
       productName: product.name,
@@ -502,7 +502,7 @@ function App() {
     }
   };
 
-  const showContractViewer = (type, params) => {
+  const displayContractViewer = (type, params) => {
     const code = generateContractCode(type, params);
     setContractCode(code);
     setTransactionType(type);

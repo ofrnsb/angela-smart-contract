@@ -550,9 +550,8 @@ angela-smart-contract/
 
 - **Solidity**: Bahasa pemrograman untuk smart contract
 - **Hardhat**: Development framework untuk smart contract (untuk development smart contract)
-- **React**: Framework untuk frontend
-- **Vite**: Build tool untuk React
 - **React**: Framework untuk frontend (aplikasi menggunakan mode demo tanpa blockchain)
+- **Vite**: Build tool untuk React
 - **OpenZeppelin**: Library untuk smart contract yang aman
 
 ---

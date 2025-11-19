@@ -7,7 +7,16 @@
     "compile": "hardhat compile",
     "clean": "hardhat clean",
     "node": "hardhat node",
+<<<<<<< HEAD
     "deploy:local": "hardhat run scripts/deploy.js --network localhost"
+=======
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:prd": "hardhat run scripts/deployPRD.js --network localhost",
+    "seed:prd": "hardhat run scripts/seedPRD.js --network localhost",
+    "add-products": "hardhat run scripts/addProducts.js --network localhost",
+    "dev": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build"
+>>>>>>> 7b3b445 (Implement PRD: Add new contracts (IDRToken, AccountRegistry, InterbankSettlement, ProductCatalog, PurchaseProcessor), deploy/seed scripts, and PRD frontend)
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",

@@ -1,165 +1,122 @@
-# Implementasi PRD - Distributed Ledger Banking System
+# PRD Implementation Summary
 
-## Status Implementasi
+## Status: Contracts Created
 
-Semua komponen sesuai PRD telah diimplementasikan:
+Semua contracts sesuai PRD telah dibuat:
 
-### ✅ Completed
+### Contracts
+1. ✅ **IDRToken.sol** - Demo ledger token dengan mint/burn oleh bank
+2. ✅ **AccountRegistry.sol** - Mapping account number ke address dan bank
+3. ✅ **InterbankSettlement.sol** - K-of-n validator approval untuk interbank transfer
+4. ✅ **ProductCatalog.sol** - Katalog produk dengan provider dan harga
+5. ✅ **PurchaseProcessor.sol** - Escrow dan fulfillment untuk pembelian produk
 
-1. **Node Implementation** (`node/`)
-   - Node dengan state store (key-value)
-   - Smart contract engine
-   - RAFT consensus (simplified)
-   - RPC API server
+### Scripts
+1. ✅ **deployPRD.js** - Deploy semua contracts dan setup roles
+2. ✅ **seedPRD.js** - Seed accounts, balances, dan products
 
-2. **Smart Contracts**
-   - ✅ TransferIntraBank
-   - ✅ TransferInterBank
-   - ✅ PurchaseProduct
+### Frontend
+1. ✅ **AppPRD.jsx** - Frontend sesuai PRD dengan:
+   - Role selector (8 roles)
+   - Simple transfer panel (intra-bank & interbank)
+   - Product purchase panel
+   - Validator panel (approve transfers)
+   - Provider panel (fulfill/fail orders)
+   - Audit feed (event log)
 
-3. **Docker Compose**
-   - 3 node setup (BNI, BCA, Merchant)
-   - Network configuration
+## Quick Start
 
-4. **API RPC**
-   - POST /transfer
-   - POST /purchase
-   - GET /balance
-   - GET /transactions
-   - GET /products
-
-5. **Frontend API Client**
-   - BankingAPI class untuk komunikasi dengan node
-
-## Struktur Project
-
-```
-angela-smart-contract/
-├── node/                          # Node implementation
-│   ├── src/
-│   │   ├── index.js              # RPC API server
-│   │   ├── node.js               # Node core
-│   │   ├── consensus/
-│   │   │   └── raft.js           # RAFT consensus
-│   │   └── contracts/
-│   │       ├── engine.js         # Contract engine
-│   │       ├── TransferIntraBank.js
-│   │       ├── TransferInterBank.js
-│   │       └── PurchaseProduct.js
-│   ├── package.json
-│   ├── Dockerfile
-│   └── README.md
-├── frontend/                      # React frontend (mode demo)
-│   └── src/
-│       └── api.js                # API client untuk node
-├── docker-compose.yml            # Multi-node setup
-└── NODE_IMPLEMENTATION.md        # Dokumentasi lengkap
-```
-
-## Cara Menggunakan
-
-### Option 1: Mode Demo (Current - Stable)
-
-Frontend saat ini menggunakan mode demo dengan localStorage. Tidak perlu node backend.
-
+### 1. Install Dependencies
 ```bash
-cd frontend
 npm install
-npm run dev
+cd frontend && npm install && cd ..
 ```
 
-### Option 2: Mode Node (Distributed Ledger)
-
-1. **Start nodes dengan Docker:**
+### 2. Start Hardhat Node
 ```bash
-docker-compose up
+npm run node
 ```
+**Catatan:** Simpan private keys yang ditampilkan untuk role switching di frontend.
 
-2. **Atau start manual:**
+### 3. Deploy Contracts
 ```bash
-# Terminal 1 - Node BNI
-cd node
-NODE_ID=node-bni NODE_TYPE=bank BANK_ID=BNI PORT=3001 PEERS=node-bca,node-merchant npm start
-
-# Terminal 2 - Node BCA
-NODE_ID=node-bca NODE_TYPE=bank BANK_ID=BCA PORT=3002 PEERS=node-bni,node-merchant npm start
-
-# Terminal 3 - Node Merchant
-NODE_ID=node-merchant NODE_TYPE=merchant BANK_ID=MERCHANT PORT=3003 PEERS=node-bni,node-bca npm start
+npm run deploy:prd
 ```
+**PENTING:** Salin semua contract addresses dari output.
 
-3. **Update frontend untuk menggunakan node:**
-   - Import `BankingAPI` dari `api.js`
-   - Ganti fungsi transfer/deposit/purchase untuk menggunakan API
+### 4. Update Contract Addresses
+Update addresses di:
+- `scripts/seedPRD.js` - CONTRACTS object
+- `frontend/src/AppPRD.jsx` - CONTRACT_ADDRESSES object
 
-## API Endpoints
-
-### Node BNI: http://localhost:3001
-### Node BCA: http://localhost:3002
-### Node Merchant: http://localhost:3003
-
-### Transfer Intra Bank
+### 5. Seed Demo Data
 ```bash
-curl -X POST http://localhost:3001/transfer \
-  -H "Content-Type: application/json" \
-  -d '{
-    "fromBank": "BNI",
-    "fromAcc": "1234567890",
-    "toBank": "BNI",
-    "toAcc": "0987654321",
-    "amount": 100000
-  }'
+npm run seed:prd
 ```
 
-### Transfer Inter Bank
+### 6. Start Frontend
 ```bash
-curl -X POST http://localhost:3001/transfer \
-  -H "Content-Type: application/json" \
-  -d '{
-    "fromBank": "BNI",
-    "fromAcc": "1234567890",
-    "toBank": "BCA",
-    "toAcc": "1111111111",
-    "amount": 500000
-  }'
+cd frontend && npm run dev
 ```
 
-### Purchase Product
-```bash
-curl -X POST http://localhost:3001/purchase \
-  -H "Content-Type: application/json" \
-  -d '{
-    "buyerBank": "BNI",
-    "buyerAcc": "1234567890",
-    "merchantId": "TELKOMSEL",
-    "productId": "PULSA_50K"
-  }'
+### 7. Switch to PRD App
+Update `frontend/src/main.jsx`:
+```jsx
+import AppPRD from './AppPRD'
+// ... change App to AppPRD
 ```
 
-## Smart Contract Code
+## Features Implemented
 
-Semua smart contract code ditampilkan di frontend saat transaksi dilakukan. Kode yang ditampilkan adalah implementasi actual dari contracts di `node/src/contracts/`.
+### Role-Based Access Control
+- ✅ BANK_ROLE: Mint/burn tokens, register accounts, add products
+- ✅ VALIDATOR_ROLE: Approve interbank transfers
+- ✅ PROVIDER_ROLE: Fulfill/fail purchase orders
+- ✅ GOVERNANCE_ROLE: Cancel transfers
 
-## Error Handling
+### Transfer Flows
+- ✅ **Intra-bank**: Direct IDRToken.transfer() - immediate
+- ✅ **Interbank**: Propose → Escrow → Validator approvals → Execute
 
-Semua error codes sesuai PRD:
-- `ACCOUNT_NOT_FOUND`
-- `INSUFFICIENT_BALANCE`
-- `PRODUCT_NOT_FOUND`
-- `PRODUCT_OUT_OF_STOCK`
-- `INVALID_TRANSFER_TYPE`
+### Purchase Flow
+- ✅ Create purchase → Escrow funds → Provider fulfill/fail → Release/refund
 
-## Catatan
+### Event System
+- ✅ TransferProposed, TransferApproved, InterbankSettled
+- ✅ PurchaseCommitted, PurchaseFulfilled, PurchaseFailed, PurchaseRefunded
 
-- **Mode Demo**: Frontend saat ini menggunakan mode demo (localStorage) yang stabil dan tidak memerlukan backend
-- **Mode Node**: Node implementation tersedia untuk demo distributed ledger, tapi frontend perlu di-update untuk menggunakannya
-- **Consensus**: RAFT disederhanakan untuk demo (tidak ada network RPC antar peer)
-- **State**: In-memory only (tidak persist ke disk)
+## Contract Addresses (Update After Deploy)
 
-## Next Steps (Optional)
+Setelah deploy, update di:
+- `scripts/seedPRD.js`
+- `frontend/src/AppPRD.jsx`
 
-Jika ingin frontend terhubung ke node:
-1. Update `App.jsx` untuk menggunakan `BankingAPI`
-2. Handle connection errors
-3. Sync state dari node ke frontend
+## Testing Checklist
+
+- [ ] Deploy contracts berhasil
+- [ ] Seed data berhasil (accounts, balances, products)
+- [ ] Role switching bekerja
+- [ ] Intra-bank transfer bekerja
+- [ ] Interbank transfer: propose → approve → settle
+- [ ] Product purchase: create → fulfill
+- [ ] Event feed menampilkan events
+- [ ] Balances update setelah transaksi
+
+## Notes
+
+1. **Approval Required**: Untuk interbank transfer dan purchase, user perlu approve contract terlebih dahulu (sudah di-handle di seed script).
+
+2. **Format Amount**: Semua amounts menggunakan 18 decimals (wei). Frontend convert dengan `parseUnits(amount, 18)`.
+
+3. **Role Switching**: Frontend menggunakan private keys dari seeded accounts. **Hanya untuk demo lokal!**
+
+4. **Event Listeners**: Frontend setup event listeners untuk audit feed. Pastikan provider terhubung ke localhost.
+
+## Next Steps
+
+1. Test semua flows
+2. Fix any bugs
+3. Add error handling yang lebih baik
+4. Improve UI/UX jika perlu
+5. Update README dengan instruksi lengkap
 

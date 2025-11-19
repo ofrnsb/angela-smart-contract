@@ -491,6 +491,10 @@ function AppPRD() {
           <strong>Demo Mode:</strong> This is a local demo simulation. No real fiat movement. 
           Switch roles using the selector below to act as different parties.
         </p>
+        <p style={{ margin: '10px 0 0 0', color: '#856404' }}>
+          <strong>Note:</strong> Untuk full functionality, jalankan Hardhat local node (npm run node) dan connect ke http://127.0.0.1:8545.
+          Lihat README_PRD.md untuk instruksi lengkap.
+        </p>
       </div>
 
       {/* Role Selector */}

@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import './index.css';
 import AboutPage from './components/AboutPage';
+import SmartContractViewer from './components/SmartContractViewer';
 
 // Simulasi data untuk demo (tanpa blockchain)
 const DEMO_MODE = true;
 
-// Data dummy untuk simulasi
+// Data dummy untuk simulasi - Account Bank Mandiri
 const initialAccounts = {
   '1234567890': { accountNumber: '1234567890', accountName: 'Budi Santoso', balance: 10000000, bank: 'BM' },
   '0987654321': { accountNumber: '0987654321', accountName: 'Siti Nurhaliza', balance: 5000000, bank: 'BM' },
+  '1122334455': { accountNumber: '1122334455', accountName: 'Rina Wati', balance: 7500000, bank: 'BM' },
+  '2233445566': { accountNumber: '2233445566', accountName: 'Dedi Kurniawan', balance: 12000000, bank: 'BM' },
+  // Account Bank BCA
   '1111111111': { accountNumber: '1111111111', accountName: 'Ahmad Yani', balance: 8000000, bank: 'BCA' },
+  '2222222222': { accountNumber: '2222222222', accountName: 'Maya Sari', balance: 6000000, bank: 'BCA' },
+  '3333333333': { accountNumber: '3333333333', accountName: 'Bambang Sutrisno', balance: 15000000, bank: 'BCA' },
+  '4444444444': { accountNumber: '4444444444', accountName: 'Lisa Permata', balance: 9000000, bank: 'BCA' },
 };
 
 const initialProducts = [
@@ -33,6 +40,9 @@ function App() {
   const [activeTab, setActiveTab] = useState('account');
   const [alert, setAlert] = useState({ type: '', message: '' });
   const [showAboutPage, setShowAboutPage] = useState(false);
+  const [showContractViewer, setShowContractViewer] = useState(false);
+  const [contractCode, setContractCode] = useState('');
+  const [transactionType, setTransactionType] = useState('');
 
   // Form states
   const [transferForm, setTransferForm] = useState({
@@ -90,6 +100,7 @@ function App() {
 
     setAccounts({ ...accounts, [userAccountNumber]: newAccount });
     showAlert('success', 'Rekening berhasil dibuat!');
+    showContractViewer('createAccount', { accountNumber: userAccountNumber, accountName: userAccountName });
   };
 
   const deposit = () => {
@@ -113,6 +124,7 @@ function App() {
     updatedAccounts[userAccountNumber].balance += amount;
     setAccounts(updatedAccounts);
     showAlert('success', `Deposit Rp ${parseFloat(depositAmount).toLocaleString('id-ID')} berhasil!`);
+    showContractViewer('deposit', { accountNumber: userAccountNumber, amount: depositAmount });
     setDepositAmount('');
   };
 
@@ -142,6 +154,7 @@ function App() {
     updatedAccounts[userAccountNumber].balance -= amount;
     setAccounts(updatedAccounts);
     showAlert('success', `Penarikan Rp ${parseFloat(withdrawAmount).toLocaleString('id-ID')} berhasil!`);
+    showContractViewer('withdraw', { accountNumber: userAccountNumber, amount: withdrawAmount });
     setWithdrawAmount('');
   };
 
@@ -182,6 +195,12 @@ function App() {
     updatedAccounts[transferForm.toAccount].balance += amount;
     setAccounts(updatedAccounts);
     showAlert('success', `Transfer Rp ${parseFloat(transferForm.amount).toLocaleString('id-ID')} berhasil!`);
+    showContractViewer('transferInternal', {
+      fromAccount: userAccountNumber,
+      toAccount: transferForm.toAccount,
+      amount: transferForm.amount,
+      description: transferForm.description
+    });
     setTransferForm({ toAccount: '', amount: '', description: '' });
   };
 
@@ -226,6 +245,13 @@ function App() {
     
     setAccounts(updatedAccounts);
     showAlert('success', `Transfer antar bank Rp ${parseFloat(externalTransferForm.amount).toLocaleString('id-ID')} berhasil!`);
+    showContractViewer('transferExternal', {
+      fromAccount: userAccountNumber,
+      toBankCode: externalTransferForm.toBankCode,
+      toAccount: externalTransferForm.toAccount,
+      amount: externalTransferForm.amount,
+      description: externalTransferForm.description
+    });
     setExternalTransferForm({ toBankCode: 'BCA', toAccount: '', amount: '', description: '' });
   };
 
@@ -255,11 +281,232 @@ function App() {
     updatedAccounts[userAccountNumber].balance -= product.price;
     setAccounts(updatedAccounts);
     showAlert('success', `Produk ${product.name} berhasil dibeli!`);
+    showContractViewer('purchaseProduct', {
+      accountNumber: userAccountNumber,
+      productId: productId,
+      productName: product.name,
+      price: product.price
+    });
   };
 
   const showAlert = (type, message) => {
     setAlert({ type, message });
     setTimeout(() => setAlert({ type: '', message: '' }), 5000);
+  };
+
+  // Fungsi untuk generate smart contract code
+  const generateContractCode = (type, params) => {
+    switch(type) {
+      case 'createAccount':
+        return `function createAccount(
+    string memory _accountNumber,
+    string memory _accountName
+) external {
+    require(bytes(_accountNumber).length > 0, "Nomor rekening tidak boleh kosong");
+    require(bytes(_accountName).length > 0, "Nama rekening tidak boleh kosong");
+    require(!accounts[_accountNumber].exists, "Rekening sudah ada");
+
+    accounts[_accountNumber] = Account({
+        accountAddress: msg.sender,
+        accountNumber: _accountNumber,
+        accountName: _accountName,
+        balance: 0,
+        exists: true,
+        createdAt: block.timestamp
+    });
+
+    emit AccountCreated(
+        _accountNumber,
+        msg.sender,
+        _accountName,
+        block.timestamp
+    );
+}
+
+// Parameter yang digunakan:
+// _accountNumber: "${params.accountNumber}"
+// _accountName: "${params.accountName}"`;
+
+      case 'deposit':
+        return `function deposit(string memory _accountNumber) external payable {
+    require(accounts[_accountNumber].exists, "Rekening tidak ditemukan");
+    require(msg.value > 0, "Jumlah deposit harus lebih dari 0");
+
+    accounts[_accountNumber].balance += msg.value;
+
+    emit Deposit(_accountNumber, msg.value, block.timestamp);
+}
+
+// Parameter yang digunakan:
+// _accountNumber: "${params.accountNumber}"
+// msg.value: ${params.amount} (dalam wei/smallest unit)
+// Jumlah: Rp ${parseFloat(params.amount).toLocaleString('id-ID')}`;
+
+      case 'withdraw':
+        return `function withdraw(
+    string memory _accountNumber,
+    uint256 _amount
+) external nonReentrant {
+    require(accounts[_accountNumber].exists, "Rekening tidak ditemukan");
+    require(
+        accounts[_accountNumber].accountAddress == msg.sender,
+        "Hanya pemilik rekening yang dapat menarik"
+    );
+    require(_amount > 0, "Jumlah penarikan harus lebih dari 0");
+    require(
+        accounts[_accountNumber].balance >= _amount,
+        "Saldo tidak mencukupi"
+    );
+
+    accounts[_accountNumber].balance -= _amount;
+    payable(msg.sender).transfer(_amount);
+
+    emit Withdrawal(_accountNumber, _amount, block.timestamp);
+}
+
+// Parameter yang digunakan:
+// _accountNumber: "${params.accountNumber}"
+// _amount: ${params.amount}
+// Jumlah: Rp ${parseFloat(params.amount).toLocaleString('id-ID')}`;
+
+      case 'transferInternal':
+        return `function transferInternal(
+    string memory _fromAccount,
+    string memory _toAccount,
+    uint256 _amount,
+    string memory _description
+) external {
+    require(accounts[_fromAccount].exists, "Rekening pengirim tidak ditemukan");
+    require(accounts[_toAccount].exists, "Rekening penerima tidak ditemukan");
+    require(
+        accounts[_fromAccount].accountAddress == msg.sender,
+        "Hanya pemilik rekening yang dapat transfer"
+    );
+    require(_amount > 0, "Jumlah transfer harus lebih dari 0");
+    require(
+        accounts[_fromAccount].balance >= _amount,
+        "Saldo tidak mencukupi"
+    );
+    require(
+        keccak256(bytes(_fromAccount)) != keccak256(bytes(_toAccount)),
+        "Tidak dapat transfer ke rekening sendiri"
+    );
+
+    accounts[_fromAccount].balance -= _amount;
+    accounts[_toAccount].balance += _amount;
+
+    emit TransferInternal(
+        _fromAccount,
+        _toAccount,
+        _amount,
+        _description,
+        block.timestamp
+    );
+}
+
+// Parameter yang digunakan:
+// _fromAccount: "${params.fromAccount}"
+// _toAccount: "${params.toAccount}"
+// _amount: ${params.amount}
+// _description: "${params.description || 'Transfer Internal'}"
+// Jumlah: Rp ${parseFloat(params.amount).toLocaleString('id-ID')}`;
+
+      case 'transferExternal':
+        return `function transferExternal(
+    string memory _fromAccount,
+    string memory _toBankCode,
+    string memory _toAccount,
+    uint256 _amount,
+    string memory _description
+) external {
+    require(accounts[_fromAccount].exists, "Rekening pengirim tidak ditemukan");
+    require(
+        accounts[_fromAccount].accountAddress == msg.sender,
+        "Hanya pemilik rekening yang dapat transfer"
+    );
+    require(_amount > 0, "Jumlah transfer harus lebih dari 0");
+    require(
+        accounts[_fromAccount].balance >= _amount,
+        "Saldo tidak mencukupi"
+    );
+    require(
+        keccak256(bytes(bankCode)) != keccak256(bytes(_toBankCode)),
+        "Gunakan transferInternal untuk transfer dalam bank yang sama"
+    );
+
+    accounts[_fromAccount].balance -= _amount;
+
+    // Memanggil InterBankNetwork untuk koordinasi
+    interBankNetwork.transferInterBank(
+        bankCode,
+        _fromAccount,
+        _toBankCode,
+        _toAccount,
+        _amount
+    );
+
+    emit TransferExternal(
+        _fromAccount,
+        _toBankCode,
+        _toAccount,
+        _amount,
+        _description,
+        block.timestamp
+    );
+}
+
+// Parameter yang digunakan:
+// _fromAccount: "${params.fromAccount}"
+// _toBankCode: "${params.toBankCode}"
+// _toAccount: "${params.toAccount}"
+// _amount: ${params.amount}
+// _description: "${params.description || 'Transfer Antar Bank'}"
+// Jumlah: Rp ${parseFloat(params.amount).toLocaleString('id-ID')}`;
+
+      case 'purchaseProduct':
+        return `function purchaseProduct(
+    string memory _accountNumber,
+    uint256 _productId
+) external {
+    require(accounts[_accountNumber].exists, "Rekening tidak ditemukan");
+    require(
+        accounts[_accountNumber].accountAddress == msg.sender,
+        "Hanya pemilik rekening yang dapat membeli"
+    );
+    require(products[_productId].isActive, "Produk tidak tersedia");
+    require(
+        accounts[_accountNumber].balance >= products[_productId].price,
+        "Saldo tidak mencukupi"
+    );
+
+    uint256 price = products[_productId].price;
+    accounts[_accountNumber].balance -= price;
+
+    emit ProductPurchased(
+        _accountNumber,
+        _productId,
+        price,
+        products[_productId].productName,
+        block.timestamp
+    );
+}
+
+// Parameter yang digunakan:
+// _accountNumber: "${params.accountNumber}"
+// _productId: ${params.productId}
+// Product: ${params.productName}
+// Harga: Rp ${params.price.toLocaleString('id-ID')}`;
+
+      default:
+        return '// Smart contract code';
+    }
+  };
+
+  const showContractViewer = (type, params) => {
+    const code = generateContractCode(type, params);
+    setContractCode(code);
+    setTransactionType(type);
+    setShowContractViewer(true);
   };
 
   if (showAboutPage) {
@@ -268,6 +515,13 @@ function App() {
 
   return (
     <div className="container">
+      {showContractViewer && (
+        <SmartContractViewer
+          contractCode={contractCode}
+          transactionType={transactionType}
+          onClose={() => setShowContractViewer(false)}
+        />
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1 style={{ margin: 0 }}>Sistem Perbankan dengan Smart Contract</h1>
         <button 

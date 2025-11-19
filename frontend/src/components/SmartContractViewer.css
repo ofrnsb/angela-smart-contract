@@ -1,0 +1,138 @@
+.contract-viewer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.contract-viewer-modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.contract-viewer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 2px solid #e0e0e0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.contract-viewer-header h2 {
+  margin: 0;
+  font-size: 1.5em;
+  color: white;
+}
+
+.close-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 2em;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.contract-viewer-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.transaction-type-badge {
+  display: inline-block;
+  background: #667eea;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.contract-code {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 24px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 20px 0;
+  font-family: 'Courier New', 'Monaco', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  border: 2px solid #333;
+}
+
+.contract-code code {
+  color: #d4d4d4;
+  white-space: pre;
+}
+
+.contract-code .keyword {
+  color: #569cd6;
+}
+
+.contract-code .string {
+  color: #ce9178;
+}
+
+.contract-code .number {
+  color: #b5cea8;
+}
+
+.contract-code .comment {
+  color: #6a9955;
+}
+
+.contract-explanation {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+  margin-top: 20px;
+}
+
+.contract-explanation p {
+  margin: 0;
+  line-height: 1.6;
+  color: #555;
+}
+
+@media (max-width: 768px) {
+  .contract-viewer-modal {
+    max-width: 95%;
+    max-height: 95vh;
+  }
+
+  .contract-code {
+    font-size: 12px;
+    padding: 16px;
+  }
+}
+

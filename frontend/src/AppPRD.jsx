@@ -664,7 +664,224 @@ function AppPRD() {
         </button>
       </div>
 
-      {/* Processing Flow Modal - already defined above */}
+      {/* Processing Flow Modal */}
+      {showFlowModal && isProcessing && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}
+          onClick={() => {}} // Prevent closing on background click during processing
+        >
+          <div 
+            style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '30px',
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflowY: 'auto',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: 0, color: '#667eea' }}>Memproses Transaksi...</h2>
+            </div>
+            <div style={{ marginTop: '20px' }}>
+              {flowSteps.map((step, idx) => (
+                <div 
+                  key={idx} 
+                  style={{ 
+                    marginBottom: '15px',
+                    padding: '15px',
+                    background: step.status === 'completed' ? '#d4edda' : step.status === 'processing' ? '#fff3cd' : '#f8f9fa',
+                    border: `2px solid ${step.status === 'completed' ? '#28a745' : step.status === 'processing' ? '#ffc107' : '#e0e0e0'}`,
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '15px'
+                  }}
+                >
+                  <div style={{ 
+                    width: '40px', 
+                    height: '40px', 
+                    borderRadius: '50%', 
+                    background: step.status === 'completed' ? '#28a745' : step.status === 'processing' ? '#ffc107' : '#e0e0e0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    flexShrink: 0
+                  }}>
+                    {step.status === 'completed' ? '✓' : step.step}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3 style={{ margin: 0, fontSize: '16px' }}>{step.title}</h3>
+                      <span style={{ 
+                        fontSize: '12px', 
+                        color: '#666',
+                        background: '#e0e0e0',
+                        padding: '4px 8px',
+                        borderRadius: '4px'
+                      }}>
+                        {step.node}
+                      </span>
+                    </div>
+                    <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '14px' }}>{step.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Smart Contract Data Modal */}
+      {showContractModal && smartContractData && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}
+          onClick={() => setShowContractModal(false)}
+        >
+          <div 
+            style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '30px',
+              maxWidth: '700px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflowY: 'auto',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: 0, color: '#1976D2' }}>Data Smart Contract</h2>
+              <button
+                onClick={() => setShowContractModal(false)}
+                style={{
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '30px',
+                  height: '30px',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ marginTop: '15px' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <strong style={{ fontSize: '14px', color: '#666' }}>Contract Name:</strong>
+                <div style={{ marginTop: '5px', fontSize: '16px', fontWeight: 'bold' }}>{smartContractData.contractName}</div>
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <strong style={{ fontSize: '14px', color: '#666' }}>Contract Address:</strong>
+                <div style={{ 
+                  marginTop: '5px', 
+                  padding: '12px', 
+                  background: '#f8f9fa', 
+                  borderRadius: '8px',
+                  fontFamily: 'monospace',
+                  fontSize: '14px',
+                  wordBreak: 'break-all',
+                  border: '1px solid #e0e0e0'
+                }}>
+                  {smartContractData.contractAddress}
+                </div>
+              </div>
+              {smartContractData.result.transactionHash && (
+                <div style={{ marginBottom: '20px' }}>
+                  <strong style={{ fontSize: '14px', color: '#666' }}>Transaction Hash:</strong>
+                  <div style={{ 
+                    marginTop: '5px', 
+                    padding: '12px', 
+                    background: '#f8f9fa', 
+                    borderRadius: '8px',
+                    fontFamily: 'monospace',
+                    fontSize: '14px',
+                    wordBreak: 'break-all',
+                    border: '1px solid #e0e0e0'
+                  }}>
+                    {smartContractData.result.transactionHash}
+                  </div>
+                </div>
+              )}
+              <div style={{ marginBottom: '20px' }}>
+                <strong style={{ fontSize: '14px', color: '#666' }}>Function:</strong>
+                <div style={{ marginTop: '5px', fontSize: '16px' }}>{smartContractData.function}</div>
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <strong style={{ fontSize: '14px', color: '#666' }}>Parameters:</strong>
+                <div style={{ marginLeft: '20px', marginTop: '10px', background: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+                  {Object.entries(smartContractData.parameters).map(([key, value]) => (
+                    <div key={key} style={{ marginBottom: '8px', fontSize: '14px' }}>
+                      <strong>{key}:</strong> {value}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <strong style={{ fontSize: '14px', color: '#666' }}>Result:</strong>
+                <div style={{ marginLeft: '20px', marginTop: '10px', background: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+                  {Object.entries(smartContractData.result).filter(([key]) => key !== 'transactionHash').map(([key, value]) => (
+                    <div key={key} style={{ marginBottom: '8px', fontSize: '14px' }}>
+                      <strong>{key}:</strong> {value}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowContractModal(false)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: '#667eea',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '16px',
+                cursor: 'pointer',
+                marginTop: '20px'
+              }}
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Transaction Result */}
       {transactionResult && !isProcessing && (

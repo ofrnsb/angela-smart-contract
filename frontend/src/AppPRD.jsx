@@ -116,9 +116,9 @@ const translations = {
     tooltipValidatorThreshold:
       'Jumlah persetujuan validator yang dibutuhkan sebelum eksekusi kontrak.',
     tooltipFailToBank:
-      'Paksa validasi bank tujuan gagal untuk menguji skenario gagal konsensus.',
+      'Simulasi validasi bank tujuan gagal untuk menguji skenario gagal konsensus.',
     tooltipFailRegulator:
-      'Paksa validasi regulator gagal untuk menguji skenario gagal konsensus.',
+      'Simulasi validasi regulator gagal untuk menguji skenario gagal konsensus.',
     tooltipDisputeReversal:
       'Setelah settle, simulasi adanya dispute dan reversal saldo.',
     selectAccount: 'Mohon lengkapi semua field',
@@ -165,11 +165,11 @@ const translations = {
     processSpeed: 'Process Speed',
     validatorThreshold: 'Validator Threshold',
     totalNodesHint: 'Total nodes: 3 (Source, Destination, Regulator)',
-    simulateFailToBank: 'Simulate destination bank validation failure',
+    simulateFailToBank: 'Destination bank validation failure',
     simulationExtras: 'Extra Simulation',
     copy: 'Copy',
-    simulateFailRegulator: 'Simulate regulator validation failure',
-    simulateDispute: 'Simulate Dispute & Reversal after settlement',
+    simulateFailRegulator: 'Regulator validation failure',
+    simulateDispute: 'Dispute & Reversal after settlement',
     reversedDueToDispute: 'Transaction reversed due to dispute',
     tooltipProcessSpeed: 'Adjust simulation speed (higher value = slower).',
     tooltipValidatorThreshold:
@@ -714,21 +714,21 @@ function AppPRD() {
         step: 7,
         title: 'Eksekusi Smart Contract',
         description:
-          (language === 'id'
+          language === 'id'
             ? 'Menjalankan fungsi proposeTransfer pada validator set untuk commit transaksi'
-            : 'Execute proposeTransfer on the validator set to commit the transaction'),
+            : 'Execute proposeTransfer on the validator set to commit the transaction',
         status: 'processing',
         node: 'Validator Set',
         details: [
-          (language === 'id'
+          language === 'id'
             ? `Eksekutor: Node ${fromAcc.bank}, Node ${toAcc.bank}, Node Regulator`
-            : `Executors: Node ${fromAcc.bank}, Node ${toAcc.bank}, Regulator Node`),
-          (language === 'id'
+            : `Executors: Node ${fromAcc.bank}, Node ${toAcc.bank}, Regulator Node`,
+          language === 'id'
             ? 'Kontrak dieksekusi setelah persetujuan terpenuhi.'
-            : 'Contract executes after approvals are met.'),
-          (language === 'id'
+            : 'Contract executes after approvals are met.',
+          language === 'id'
             ? 'Alamat Smart Contract dan ID Transaksi dibuat pada tahap ini.'
-            : 'Contract address and Transaction ID are produced at this stage.'),
+            : 'Contract address and Transaction ID are produced at this stage.',
         ],
       });
       createdContractHash = generateAddressLikeFromName('InterbankSettlement');
@@ -860,21 +860,21 @@ function AppPRD() {
         step: 4,
         title: 'Eksekusi Smart Contract',
         description:
-          (language === 'id'
+          language === 'id'
             ? 'Menjalankan fungsi transferInternal pada validator set'
-            : 'Execute transferInternal on the validator set'),
+            : 'Execute transferInternal on the validator set',
         status: 'processing',
         node: 'Validator Set',
         details: [
-          (language === 'id'
+          language === 'id'
             ? `Eksekutor: Node ${fromAcc.bank}`
-            : `Executors: Node ${fromAcc.bank}`),
-          (language === 'id'
+            : `Executors: Node ${fromAcc.bank}`,
+          language === 'id'
             ? 'Kontrak dieksekusi untuk mencatat transfer internal.'
-            : 'Contract executes to record the internal transfer.'),
-          (language === 'id'
+            : 'Contract executes to record the internal transfer.',
+          language === 'id'
             ? 'Alamat Smart Contract dan ID Transaksi dibuat pada tahap ini.'
-            : 'Contract address and Transaction ID are produced at this stage.'),
+            : 'Contract address and Transaction ID are produced at this stage.',
         ],
       });
       createdContractHash = generateAddressLikeFromName('BankTransfer');
@@ -1183,21 +1183,21 @@ function AppPRD() {
       step: 7,
       title: 'Eksekusi Smart Contract',
       description:
-        (language === 'id'
+        language === 'id'
           ? 'Menjalankan fungsi createPurchase pada validator set untuk mencatat transaksi'
-          : 'Execute createPurchase on the validator set to record the transaction'),
+          : 'Execute createPurchase on the validator set to record the transaction',
       status: 'processing',
       node: 'Validator Set',
       details: [
-        (language === 'id'
+        language === 'id'
           ? `Eksekutor: Node ${buyerAcc.bank}, Node ${product.provider}`
-          : `Executors: Node ${buyerAcc.bank}, Node ${product.provider}`),
-        (language === 'id'
+          : `Executors: Node ${buyerAcc.bank}, Node ${product.provider}`,
+        language === 'id'
           ? 'Kontrak dieksekusi untuk mencatat pembelian.'
-          : 'Contract executes to record the purchase.'),
-        (language === 'id'
+          : 'Contract executes to record the purchase.',
+        language === 'id'
           ? 'Alamat Smart Contract dan ID Transaksi dibuat pada tahap ini.'
-          : 'Contract address and Transaction ID are produced at this stage.'),
+          : 'Contract address and Transaction ID are produced at this stage.',
       ],
     });
     createdContractHash = generateAddressLikeFromName('PurchaseProcessor');
@@ -1497,6 +1497,25 @@ function AppPRD() {
     setTransferForm({ fromAccount: '', toAccount: '', amount: '', memo: '' });
   };
 
+  const accountList = Object.values(accounts);
+  const accountsByBank = useMemo(() => {
+    const groups = {};
+    Object.values(accounts).forEach((acc) => {
+      groups[acc.bank] = groups[acc.bank] || [];
+      groups[acc.bank].push(acc);
+    });
+    return groups;
+  }, [accounts]);
+
+  const productsByProvider = useMemo(() => {
+    const groups = {};
+    products.forEach((p) => {
+      groups[p.provider] = groups[p.provider] || [];
+      groups[p.provider].push(p);
+    });
+    return groups;
+  }, [products]);
+
   const handlePurchase = async () => {
     if (!purchaseForm.buyerAccount || !purchaseForm.productId) {
       alert(t.selectProductError);
@@ -1528,24 +1547,6 @@ function AppPRD() {
       />
     );
   }
-
-  const accountList = Object.values(accounts);
-  const accountsByBank = useMemo(() => {
-    const groups = {};
-    Object.values(accounts).forEach((acc) => {
-      groups[acc.bank] = groups[acc.bank] || [];
-      groups[acc.bank].push(acc);
-    });
-    return groups;
-  }, [accounts]);
-  const productsByProvider = useMemo(() => {
-    const groups = {};
-    products.forEach((p) => {
-      groups[p.provider] = groups[p.provider] || [];
-      groups[p.provider].push(p);
-    });
-    return groups;
-  }, [products]);
 
   return (
     <div className='container'>
@@ -1816,9 +1817,13 @@ function AppPRD() {
               fontSize: '15px',
               fontVariantNumeric: 'tabular-nums',
               backgroundColor:
-                isTransferProcessing || isPurchaseProcessing ? '#f5f5f5' : 'white',
+                isTransferProcessing || isPurchaseProcessing
+                  ? '#f5f5f5'
+                  : 'white',
               cursor:
-                isTransferProcessing || isPurchaseProcessing ? 'not-allowed' : 'pointer',
+                isTransferProcessing || isPurchaseProcessing
+                  ? 'not-allowed'
+                  : 'pointer',
               appearance: 'none',
               backgroundImage:
                 "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")",
@@ -1840,9 +1845,14 @@ function AppPRD() {
                       <option
                         key={acc.accountNumber}
                         value={acc.accountNumber}
-                        title={`${acc.accountNumber} · ${acc.accountName} · ${bank} · Rp ${acc.balance.toLocaleString('id-ID')}`}
+                        title={`${acc.accountNumber} · ${
+                          acc.accountName
+                        } · ${bank} · Rp ${acc.balance.toLocaleString(
+                          'id-ID'
+                        )}`}
                       >
-                        {acc.accountName} - {maskAccount(acc.accountNumber)} - Rp {acc.balance.toLocaleString('id-ID')}
+                        {acc.accountName} - {maskAccount(acc.accountNumber)} -
+                        Rp {acc.balance.toLocaleString('id-ID')}
                       </option>
                     ))}
                 </optgroup>
@@ -1866,9 +1876,13 @@ function AppPRD() {
               fontSize: '15px',
               fontVariantNumeric: 'tabular-nums',
               backgroundColor:
-                isTransferProcessing || isPurchaseProcessing ? '#f5f5f5' : 'white',
+                isTransferProcessing || isPurchaseProcessing
+                  ? '#f5f5f5'
+                  : 'white',
               cursor:
-                isTransferProcessing || isPurchaseProcessing ? 'not-allowed' : 'pointer',
+                isTransferProcessing || isPurchaseProcessing
+                  ? 'not-allowed'
+                  : 'pointer',
               appearance: 'none',
               backgroundImage:
                 "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")",
@@ -1884,16 +1898,23 @@ function AppPRD() {
               .map((bank) => (
                 <optgroup key={bank} label={bank}>
                   {accountsByBank[bank]
-                    .filter((acc) => acc.accountNumber !== transferForm.fromAccount)
+                    .filter(
+                      (acc) => acc.accountNumber !== transferForm.fromAccount
+                    )
                     .slice()
                     .sort((a, b) => a.accountName.localeCompare(b.accountName))
                     .map((acc) => (
                       <option
                         key={acc.accountNumber}
                         value={acc.accountNumber}
-                        title={`${acc.accountNumber} · ${acc.accountName} · ${bank} · Rp ${acc.balance.toLocaleString('id-ID')}`}
+                        title={`${acc.accountNumber} · ${
+                          acc.accountName
+                        } · ${bank} · Rp ${acc.balance.toLocaleString(
+                          'id-ID'
+                        )}`}
                       >
-                        {acc.accountName} - {maskAccount(acc.accountNumber)} - Rp {acc.balance.toLocaleString('id-ID')}
+                        {acc.accountName} - {maskAccount(acc.accountNumber)} -
+                        Rp {acc.balance.toLocaleString('id-ID')}
                       </option>
                     ))}
                 </optgroup>
@@ -2007,9 +2028,13 @@ function AppPRD() {
               fontSize: '15px',
               fontVariantNumeric: 'tabular-nums',
               backgroundColor:
-                isTransferProcessing || isPurchaseProcessing ? '#f5f5f5' : 'white',
+                isTransferProcessing || isPurchaseProcessing
+                  ? '#f5f5f5'
+                  : 'white',
               cursor:
-                isTransferProcessing || isPurchaseProcessing ? 'not-allowed' : 'pointer',
+                isTransferProcessing || isPurchaseProcessing
+                  ? 'not-allowed'
+                  : 'pointer',
               appearance: 'none',
               backgroundImage:
                 "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")",
@@ -2031,9 +2056,14 @@ function AppPRD() {
                       <option
                         key={acc.accountNumber}
                         value={acc.accountNumber}
-                        title={`${acc.accountNumber} · ${acc.accountName} · ${bank} · Rp ${acc.balance.toLocaleString('id-ID')}`}
+                        title={`${acc.accountNumber} · ${
+                          acc.accountName
+                        } · ${bank} · Rp ${acc.balance.toLocaleString(
+                          'id-ID'
+                        )}`}
                       >
-                        {acc.accountName} - {maskAccount(acc.accountNumber)} - Rp {acc.balance.toLocaleString('id-ID')}
+                        {acc.accountName} - {maskAccount(acc.accountNumber)} -
+                        Rp {acc.balance.toLocaleString('id-ID')}
                       </option>
                     ))}
                 </optgroup>
@@ -2057,9 +2087,13 @@ function AppPRD() {
               fontSize: '15px',
               fontVariantNumeric: 'tabular-nums',
               backgroundColor:
-                isTransferProcessing || isPurchaseProcessing ? '#f5f5f5' : 'white',
+                isTransferProcessing || isPurchaseProcessing
+                  ? '#f5f5f5'
+                  : 'white',
               cursor:
-                isTransferProcessing || isPurchaseProcessing ? 'not-allowed' : 'pointer',
+                isTransferProcessing || isPurchaseProcessing
+                  ? 'not-allowed'
+                  : 'pointer',
               appearance: 'none',
               backgroundImage:
                 "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")",
@@ -2081,9 +2115,12 @@ function AppPRD() {
                       <option
                         key={product.id}
                         value={product.id}
-                        title={`${provider} · ${product.name} · Rp ${product.price.toLocaleString('id-ID')}`}
+                        title={`${provider} · ${
+                          product.name
+                        } · Rp ${product.price.toLocaleString('id-ID')}`}
                       >
-                        {product.name} - Rp {product.price.toLocaleString('id-ID')}
+                        {product.name} - Rp{' '}
+                        {product.price.toLocaleString('id-ID')}
                       </option>
                     ))}
                 </optgroup>

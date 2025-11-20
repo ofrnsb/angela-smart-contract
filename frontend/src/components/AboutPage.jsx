@@ -6,7 +6,8 @@ const translations = {
     back: '← Kembali ke Aplikasi',
     title:
       'Smart Contract dan Implementasinya pada Sistem Perbankan Konvensional Indonesia',
-    subtitle: '',
+    subtitle:
+      'Smart contract adalah mekanisme otomatis yang mengeksekusi aturan transaksi secara deterministik di antara node-node bank yang relevan (asal, tujuan, regulator) dan mencatat hasilnya secara permanen.',
 
     // 1. Pendahuluan
     intro:
@@ -277,7 +278,8 @@ const translations = {
     back: '← Back to Application',
     title:
       'Smart Contracts and the Implementation for Conventional Indonesian Banking System',
-    subtitle: '',
+    subtitle:
+      'A smart contract is an automatic mechanism that deterministically enforces transaction rules among the relevant banking nodes (sender, recipient, regulator) and records the results immutably.',
 
     // 1. Introduction
     intro:
@@ -669,7 +671,12 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
             <p>{t.governanceDesc}</p>
             <ul style={{ marginTop: '10px', paddingLeft: '25px' }}>
               {t.governanceList.map((item, idx) => (
-                <li key={idx} style={{ marginBottom: '8px', lineHeight: '1.6' }}>{item}</li>
+                <li
+                  key={idx}
+                  style={{ marginBottom: '8px', lineHeight: '1.6' }}
+                >
+                  {item}
+                </li>
               ))}
             </ul>
           </div>
@@ -682,7 +689,12 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
             <p>{t.operationsDesc}</p>
             <ul style={{ marginTop: '10px', paddingLeft: '25px' }}>
               {t.operationsList.map((item, idx) => (
-                <li key={idx} style={{ marginBottom: '8px', lineHeight: '1.6' }}>{item}</li>
+                <li
+                  key={idx}
+                  style={{ marginBottom: '8px', lineHeight: '1.6' }}
+                >
+                  {item}
+                </li>
               ))}
             </ul>
           </div>
@@ -695,7 +707,10 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
             <p>{t.simGuideDesc}</p>
             <ul style={{ marginTop: '10px', paddingLeft: '25px' }}>
               {t.simGuideList.map((item, idx) => (
-                <li key={idx} style={{ marginBottom: '8px', lineHeight: '1.6' }}>
+                <li
+                  key={idx}
+                  style={{ marginBottom: '8px', lineHeight: '1.6' }}
+                >
                   {item}
                 </li>
               ))}
@@ -772,7 +787,8 @@ function AboutPage({ onBack, language = 'id', onLanguageChange }) {
                         Eksekusi oleh pegawai/mesin pusat
                       </td>
                       <td style={{ padding: '12px', border: '1px solid #ddd' }}>
-                        Eksekusi otomatis oleh validator/mesin eksekusi (hasil disinkronkan ke node terkait)
+                        Eksekusi otomatis oleh validator/mesin eksekusi (hasil
+                        disinkronkan ke node terkait)
                       </td>
                     </tr>
                     <tr>
